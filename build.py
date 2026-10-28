@@ -23,6 +23,9 @@ def img_src(i):
                f"<text x='60' y='1010' font-family='sans-serif' font-size='40' fill='#ffffff' opacity='.85'>Photo : {html.escape(label)}</text></svg>")
         from urllib.parse import quote
         return "data:image/svg+xml," + quote(svg)
+    # Tant que la photo n'est pas dans static/img, on utilise celle de l'ancienne annonce
+    if not os.path.exists(os.path.join(os.path.dirname(__file__), "static", "img", name)):
+        return f"https://cozy-stays-curator.lovable.app/__l5e/assets-v1/{uuid}/{name}"
     return f"/img/{name}"
 
 
