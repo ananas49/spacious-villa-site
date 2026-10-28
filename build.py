@@ -15,9 +15,12 @@ e = html.escape
 
 def img_src(i):
     name, uuid, *_ = PHOTOS[i]
+    local = os.path.join(os.path.dirname(__file__), "static", "img", name)
+    if MODE == "preview" and os.path.exists(local):
+        return "img/" + name
     if MODE == "preview":
         # Aperçu : photos remplacées par un aplat, l'hébergeur d'aperçu bloquant les images externes
-        label = PHOTOS[i][2]
+        label = PHOTOS[i][3]
         svg = ("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 1067'><rect width='1600' height='1067' fill='#0D7480'/>"
                "<circle cx='1250' cy='260' r='120' fill='#F2C230'/><path d='M0 820 Q400 700 800 800 T1600 760 V1067 H0Z' fill='#15302A' opacity='.35'/>"
                f"<text x='60' y='1010' font-family='sans-serif' font-size='40' fill='#ffffff' opacity='.85'>Photo : {html.escape(label)}</text></svg>")
@@ -236,7 +239,7 @@ def build_home(lang):
     facts = "".join(f"<li><strong>{n}</strong>{e(t)}</li>" for n, t in h["facts"])
     out += f"""<main id="main">
 <section class="hero" aria-labelledby="hero-title">
-<img src="{img_src(0)}" alt="{e(PHOTOS[0][2 + i])}" width="1600" height="1067" fetchpriority="high">
+<img src="{img_src(0)}" alt="{e(PHOTOS[0][3 + i])}" width="{PHOTOS[0][2][0]}" height="{PHOTOS[0][2][1]}" fetchpriority="high">
 <div class="wrap hero-inner">
 <div>
 <h1 id="hero-title">{e(h['h1'])}</h1>
@@ -266,7 +269,7 @@ def build_home(lang):
 """
     gal = ""
     for n in range(len(PHOTOS)):
-        gal += f'<button type="button" class="g{n}"><img src="{img_src(n)}" alt="{e(PHOTOS[n][2 + i])}" loading="lazy" width="800" height="533"></button>'
+        gal += f'<button type="button" class="g{n}"><img src="{img_src(n)}" alt="{e(PHOTOS[n][3 + i])}" loading="lazy" width="{PHOTOS[n][2][0]}" height="{PHOTOS[n][2][1]}"></button>'
     out += f"""<section id="photos" style="padding-top:0"><div class="wrap">
 <div class="section-head"><h2>{e(h['photos_h'])}</h2><p>{e(h['photos_p'])}</p></div>
 <div class="gallery">{gal}</div>
@@ -377,7 +380,7 @@ def build_guide(lang, key):
 <p class="crumbs"><a href="{link(path, home)}">{e(u['home'])}</a> / {e(t['h1'])}</p>
 <h1>{e(t['h1'])}</h1>
 </div>
-<img class="article-cover" src="{img_src(g['img'])}" alt="{e(PHOTOS[g['img']][2 + i])}" width="1600" height="800" fetchpriority="high">
+<img class="article-cover" src="{img_src(g['img'])}" alt="{e(PHOTOS[g['img']][3 + i])}" width="1600" height="800" fetchpriority="high">
 <article class="prose">{body}
 <div class="panel" style="margin-top:40px"><h2 style="margin-top:0">{e(cta_h)}</h2><p>{e(cta_p)}</p><a class="btn" href="{link(path, home, '#book')}">{e(u['book'])}</a></div>
 </article>
@@ -459,8 +462,7 @@ def main():
     for name in os.listdir(src):
         p = os.path.join(src, name)
         if os.path.isdir(p):
-            if MODE == "prod":
-                shutil.copytree(p, os.path.join(OUT, name))
+            shutil.copytree(p, os.path.join(OUT, name))
         else:
             shutil.copy(p, OUT)
     with open(os.path.join(OUT, "favicon.svg"), "w") as f:

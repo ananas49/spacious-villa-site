@@ -1,27 +1,36 @@
 """Textes du site, en anglais et en français."""
 
 PHOTOS = [
-    ("property-01.jpg", "580cef39-1f10-4697-b7dc-fddd8c5f9009",
-     "Private pool and yellow villa beneath the Saint Martin hills",
-     "Piscine privée et villa jaune au pied des collines de Saint-Martin"),
-    ("property-02.jpg", "6b79a5eb-d4b1-483e-a3fe-5c37c5f6de64",
-     "Private outdoor pool with a wide sun terrace",
-     "Piscine privée et grande terrasse ensoleillée"),
-    ("property-04.jpg", "ff0778f4-de5a-44ab-a281-d442e63512d5",
-     "Outdoor lounge overlooking greenery and the sea",
-     "Salon extérieur avec vue sur la verdure et la mer"),
-    ("property-03.jpg", "c890c3ff-5180-4261-93dd-991a8c7ff92d",
-     "Shaded poolside seating with bright cushions",
-     "Coin salon ombragé au bord de la piscine"),
-    ("property-05.jpg", "1533e958-114c-4f79-9924-1e0155a187e4",
-     "Covered gazebo lounge with a sea view",
-     "Gazebo couvert avec vue mer"),
-    ("property-06.jpg", "22415a82-27cf-4df7-bb9e-bf1ffb700248",
-     "Covered outdoor dining table beside the villa",
-     "Table à manger extérieure couverte"),
-    ("property-12.jpg", "f05a5184-20f6-4e68-ad44-3ae4552a98a6",
-     "Airy dining room with a vaulted white ceiling",
-     "Salle à manger lumineuse sous plafond cathédrale"),
+    ("villa-pool-gazebo.jpg", "", (1452, 966),
+     "Private pool, gazebo and yellow villa beneath the Saint Martin hills",
+     "Piscine privée, gazebo et villa jaune au pied des collines de Saint-Martin"),
+    ("living-room-sea-view.jpg", "", (1164, 890),
+     "Living room with vaulted ceiling and sea view",
+     "Salon sous plafond cathédrale avec vue mer"),
+    ("covered-terrace-sea-view.jpg", "", (1314, 878),
+     "Covered dining terrace overlooking the pool and the sea",
+     "Terrasse couverte avec table, vue sur la piscine et la mer"),
+    ("private-pool.jpg", "", (1322, 860),
+     "Private pool with sun loungers",
+     "Piscine privée et transats"),
+    ("bedroom-balcony.jpg", "", (1146, 860),
+     "Bedroom with four-poster bed and balcony",
+     "Chambre avec lit à baldaquin et balcon"),
+    ("outdoor-lounge-sea-view.jpg", "", (1164, 860),
+     "Outdoor lounge under the gazebo with a view of the sea",
+     "Salon extérieur sous le gazebo avec vue mer"),
+    ("dining-room.jpg", "", (1314, 878),
+     "Dining room for eight opening onto the pool",
+     "Salle à manger pour huit ouverte sur la piscine"),
+    ("tv-lounge.jpg", "", (1322, 860),
+     "TV lounge with 75-inch screen and Netflix",
+     "Salon TV avec écran 75 pouces et Netflix"),
+    ("poolside-lounge.jpg", "", (1164, 758),
+     "Lounge area beside the pool",
+     "Coin salon au bord de la piscine"),
+    ("villa-garden-exterior.jpg", "", (1308, 890),
+     "The villa, its garden and covered veranda",
+     "La villa, son jardin et sa véranda couverte"),
 ]
 
 # Pages: key -> (EN path, FR path)
@@ -241,7 +250,7 @@ def faq(lang, cfg):
 
 GUIDES = {
     "pinel": {
-        "img": 4,
+        "img": 2,
         "en": {
             "title": "Pinel Island from Cul-de-Sac: Ferry, Beaches and Snorkeling Guide",
             "desc": "How to spend a day on Pinel Island, Saint Martin: the ferry from Cul-de-Sac, the best beach spots, the snorkeling trail and tips from a villa three minutes from the boat.",
@@ -341,7 +350,7 @@ GUIDES = {
         },
     },
     "beaches": {
-        "img": 1,
+        "img": 5,
         "en": {
             "title": "Best Beaches on the French Side of Saint Martin (Local Guide)",
             "desc": "The best beaches of French Saint Martin near Cul-de-Sac: Orient Bay, Pinel Island, Grand Case, Friar's Bay, Happy Bay, Baie Rouge, Baie Longue and Anse Marcel, with tips for families and snorkelers.",
