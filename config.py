@@ -47,3 +47,6 @@ SEASONS = [
     ("High season", "Haute saison", "December to April", "Décembre à avril", 400, 5),
     ("Holidays", "Fêtes de fin d'année", "Christmas and New Year", "Noël et Nouvel An", 550, 7),
 ]
+
+# Période des fêtes (mois-jour) : nuits du 20 décembre au 2 janvier inclus
+HOLIDAYS = ("12-20", "01-02")

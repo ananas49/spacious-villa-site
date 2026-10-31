@@ -8,6 +8,7 @@
   --yellow-deep: #D9A515;
   --lagoon: #0D7480;
   --lagoon-soft: #E3F1F1;
+  --warn: #A4452C;
   --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
   --body: "Source Serif 4", Georgia, serif;
   --wrap: 1180px;
@@ -16,12 +17,12 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --plaster: #0F1D1A; --paper: #15241F; --ink: #EEF3F0; --ink-soft: #AFC0BA;
-    --line: #2A3D37; --lagoon: #5CC3C9; --lagoon-soft: #173330;
+    --line: #2A3D37; --lagoon: #5CC3C9; --lagoon-soft: #173330; --warn: #F08E72;
   }
 }
 :root[data-theme="dark"] {
   --plaster: #0F1D1A; --paper: #15241F; --ink: #EEF3F0; --ink-soft: #AFC0BA;
-  --line: #2A3D37; --lagoon: #5CC3C9; --lagoon-soft: #173330;
+  --line: #2A3D37; --lagoon: #5CC3C9; --lagoon-soft: #173330; --warn: #F08E72;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -244,3 +245,8 @@ dl.spec dd { margin: 0; font-family: var(--display); font-weight: 700; text-alig
 .rates td { text-align: right; white-space: nowrap; padding-left: 12px; }
 .rates td:nth-child(2) { font-weight: 800; font-size: 1.15rem; }
 .rates-note { font-size: .88rem; color: var(--ink-soft); margin: 6px 0 22px; }
+
+.estimate { font-family: var(--display); font-size: .95rem; margin: -2px 0 14px; min-height: 0; }
+.estimate:empty { display: none; }
+.estimate strong { font-size: 1.1rem; }
+.estimate .warn { color: var(--warn); display: block; margin-top: 4px; }

@@ -156,13 +156,27 @@ def guest_options(lang, selected=2):
     return "".join(f'<option value="{n}"{" selected" if n == selected else ""}>{UI[lang]["guest_n"](n)}</option>' for n in range(1, 9))
 
 
-def date_fields(lang, prefix=""):
+def date_fields(lang, prefix="", names=("checkin", "checkout", "guests")):
     u = UI[lang]
+    n_in, n_out, n_g = names
     return f"""<div class="field-row">
-<div><label for="{prefix}checkin">{u['checkin']}</label><input type="date" id="{prefix}checkin" name="checkin" required></div>
-<div><label for="{prefix}checkout">{u['checkout']}</label><input type="date" id="{prefix}checkout" name="checkout" required></div>
+<div><label for="{prefix}checkin">{u['checkin']}</label><input type="date" id="{prefix}checkin" name="{n_in}" data-role="checkin" required></div>
+<div><label for="{prefix}checkout">{u['checkout']}</label><input type="date" id="{prefix}checkout" name="{n_out}" data-role="checkout" required></div>
 </div>
-<label for="{prefix}guests">{u['guests']}</label><select id="{prefix}guests" name="guests">{guest_options(lang)}</select>"""
+<label for="{prefix}guests">{u['guests']}</label><select id="{prefix}guests" name="{n_g}" data-role="guests">{guest_options(lang)}</select>"""
+
+
+def rates_json():
+    """Tarifs pour l'estimation affichée dans le formulaire."""
+    s = {x[0]: x for x in getattr(C, "SEASONS", [])}
+    if not s:
+        return ""
+    d = {"low": [s["Low season"][4], s["Low season"][5]],
+         "high": [s["High season"][4], s["High season"][5]],
+         "holiday": [s["Holidays"][4], s["Holidays"][5]],
+         "holidayFrom": C.HOLIDAYS[0], "holidayTo": C.HOLIDAYS[1],
+         "cleaning": C.CLEANING_FEE_EUR or 0}
+    return json.dumps(d)
 
 
 def jsonld_rental(lang):
@@ -318,18 +332,23 @@ def build_home(lang):
 <p class="price-line">{price}</p>
 {rates_table(lang)}
 {smoobu}
-<form id="enquiry" name="enquiry" method="POST" action="{link(path, thanks)}" data-netlify="true" netlify-honeypot="bot-field">
-<input type="hidden" name="form-name" value="enquiry"><input type="hidden" name="language" value="{lang}">
+<form id="enquiry" name="enquiry" method="POST" action="{link(path, thanks)}" data-netlify="true" netlify-honeypot="bot-field" data-lang="{lang}" data-rates='{rates_json()}'>
+<input type="hidden" name="form-name" value="enquiry">
+<input type="hidden" name="subject" value="Nouvelle demande de réservation">
 <p class="hp"><label>Leave empty <input name="bot-field"></label></p>
 <h3>{e(h['form_h'])}</h3>
-{date_fields(lang)}
-<label for="name">{e(h['name'])}</label><input id="name" name="name" autocomplete="name" required>
+{date_fields(lang, names=("Arrivée", "Départ", "Voyageurs"))}
+<p class="estimate" id="estimate" aria-live="polite"></p>
+<input type="hidden" name="Nuits" value="">
+<input type="hidden" name="Estimation" value="">
+<input type="hidden" name="Langue du client" value="{'Anglais' if lang == 'en' else 'Français'}">
+<label for="name">{e(h['name'])}</label><input id="name" name="Nom" autocomplete="name" required>
 <div class="field-row">
-<div><label for="email">{e(h['email'])}</label><input id="email" name="email" type="email" autocomplete="email" required></div>
-<div><label for="phone">{e(h['phone'])}</label><input id="phone" name="phone" type="tel" autocomplete="tel"></div>
+<div><label for="email">{e(h['email'])}</label><input id="email" name="E-mail" type="email" autocomplete="email" required></div>
+<div><label for="phone">{e(h['phone'])}</label><input id="phone" name="Téléphone" type="tel" autocomplete="tel"></div>
 </div>
-<label for="message">{e(h['message'])}</label><textarea id="message" name="message" placeholder="{e(h['message_ph'])}"></textarea>
-<label class="check"><input type="checkbox" name="consent" required> <span>{e(h['consent'])} <a href="{link(path, PAGES['privacy'][i])}">{e(u['privacy'])}</a></span></label>
+<label for="message">{e(h['message'])}</label><textarea id="message" name="Message" placeholder="{e(h['message_ph'])}"></textarea>
+<label class="check"><input type="checkbox" required> <span>{e(h['consent'])} <a href="{link(path, PAGES['privacy'][i])}">{e(u['privacy'])}</a></span></label>
 <button class="btn" type="submit" style="width:100%;margin-top:12px">{e(h['send'])}</button>
 <p class="form-note">{e(h['form_note'])}</p>
 </form>
