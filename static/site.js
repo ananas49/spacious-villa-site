@@ -77,7 +77,7 @@
       }
       out.innerHTML = html;
       setField('Nuits', nights + (nights < minNeeded ? ' (minimum ' + minNeeded + ' pour ces dates)' : ''));
-      setField('Estimation', total.toLocaleString('fr-FR') + ' € + ' + R.cleaning + ' € ménage = ' + grand.toLocaleString('fr-FR') + ' €');
+      setField('Estimation', fmt(total) + ' + ' + fmt(R.cleaning) + ' ménage = ' + fmt(grand) + (fr ? '' : ' (USD)'));
     };
     ['change', 'input'].forEach(function (ev) { main.addEventListener(ev, update); });
     update();

@@ -4,6 +4,9 @@ PHOTOS = [
     ("villa-pool-gazebo.jpg", "", (1452, 966),
      "Private pool, gazebo and yellow villa beneath the Saint Martin hills",
      "Piscine privée, gazebo et villa jaune au pied des collines de Saint-Martin"),
+    ("spacious-villa-mural.jpg", "", (1600, 899),
+     "The Spacious Villa mural, a sea turtle and coral reef, painted by the pool",
+     "La fresque Spacious Villa, tortue et récif corallien, peinte au bord de la piscine"),
     ("living-room-sea-view.jpg", "", (1164, 890),
      "Living room with vaulted ceiling and sea view",
      "Salon sous plafond cathédrale avec vue mer"),
@@ -92,6 +95,8 @@ HOME = {
         ],
         "spec": [("Property", "Entire villa"), ("Bedrooms", "4"), ("Bathrooms", "3.5"), ("Sleeps", "8 guests"),
                  ("Pool", "Private, outdoor"), ("Parking", "Private, on site"), ("Arrival", "Self check-in"), ("Pets", "Welcome"), ("Housekeeping", "Weekly")],
+        "mural_h": "Welcome to Spacious Villa",
+        "mural_p": "Our new mural brings the Caribbean reef to the poolside: a sea turtle, coral and tropical fish, painted for our guests.",
         "photos_h": "Inside and out",
         "photos_p": "Tap a photo to see it full screen.",
         "hl_h": "Why guests choose this villa",
@@ -120,7 +125,7 @@ HOME = {
         "book_p": "Booking with us directly means a simpler stay and a better deal.",
         "direct": ["No platform service fees", "Talk directly to the owners, before and during your stay", "Flexible on special requests, early arrivals and long stays", "Secure card payment"],
         "price_on_req": "Rate on request",
-        "price_from": lambda p: f"From <strong>€{p}</strong> per night",
+        "price_from": lambda p: f"From <strong>{p}</strong> per night",
         "form_h": "Request your dates",
         "name": "Full name", "email": "Email", "phone": "Phone or WhatsApp", "message": "Anything we should know?",
         "message_ph": "Arrival time, children's ages, occasion…",
@@ -147,6 +152,8 @@ HOME = {
         ],
         "spec": [("Logement", "Villa entière"), ("Chambres", "4"), ("Salles de bain", "3,5"), ("Capacité", "8 voyageurs"),
                  ("Piscine", "Privée, extérieure"), ("Parking", "Privé, sur place"), ("Arrivée", "Autonome"), ("Animaux", "Acceptés"), ("Ménage", "Hebdomadaire")],
+        "mural_h": "Bienvenue à Spacious Villa",
+        "mural_p": "Notre nouvelle fresque fait entrer le récif des Caraïbes au bord de la piscine : une tortue de mer, des coraux et des poissons tropicaux, peints pour nos voyageurs.",
         "photos_h": "Dedans comme dehors",
         "photos_p": "Touchez une photo pour l'agrandir.",
         "hl_h": "Pourquoi nos voyageurs choisissent cette villa",
@@ -175,7 +182,7 @@ HOME = {
         "book_p": "Réserver directement avec nous, c'est un séjour plus simple et un meilleur prix.",
         "direct": ["Aucuns frais de service de plateforme", "Un contact direct avec les propriétaires, avant et pendant le séjour", "De la souplesse pour les demandes spéciales, arrivées anticipées et longs séjours", "Paiement sécurisé par carte"],
         "price_on_req": "Tarif sur demande",
-        "price_from": lambda p: f"À partir de <strong>{p} €</strong> la nuit",
+        "price_from": lambda p: f"À partir de <strong>{p}</strong> la nuit",
         "form_h": "Demandez vos dates",
         "name": "Nom complet", "email": "E-mail", "phone": "Téléphone ou WhatsApp", "message": "Quelque chose à nous dire ?",
         "message_ph": "Heure d'arrivée, âge des enfants, occasion…",
@@ -223,16 +230,16 @@ def faq(lang, cfg):
                     "Yes: 3 nights in low season, 5 nights in high season and 7 nights over Christmas and New Year." if en else "Oui : 3 nuits en basse saison, 5 nuits en haute saison et 7 nuits pour Noël et le Nouvel An."))
     if getattr(cfg, "SEASONS", None):
         rows = ("; " if en else " ; ").join(
-            (f"{s[0].lower()} ({s[2][0].lower() + s[2][1:] if not s[2].startswith(('May','December','Christmas')) else s[2]}): €{s[4]} per night, minimum {s[5]} nights" if en
-             else f"{s[1].lower()} ({s[3][0].lower() + s[3][1:] if not s[3].startswith('Noël') else s[3]}), {s[4]} € la nuit et {s[5]} nuits minimum") for s in cfg.SEASONS)
+            (f"{s[0].lower()} ({s[2][0].lower() + s[2][1:] if not s[2].startswith(('May','December','Christmas')) else s[2]}): {cfg.money('en', s[4])} per night, minimum {s[5]} nights" if en
+             else f"{s[1].lower()} ({s[3][0].lower() + s[3][1:] if not s[3].startswith('Noël') else s[3]}), {cfg.money('fr', s[4])} la nuit et {s[5]} nuits minimum") for s in cfg.SEASONS)
         out.append(("How much does the villa cost per night?" if en else "Quel est le prix de la villa par nuit ?",
                     (f"Our direct rates are: {rows}." if en else f"Nos tarifs en direct : {rows}.")
-                    + ((f" A cleaning fee of €{cfg.CLEANING_FEE_EUR} applies once per stay." if en
-                        else f" Des frais de ménage de {cfg.CLEANING_FEE_EUR} € s'ajoutent une fois par séjour.") if cfg.CLEANING_FEE_EUR else "")))
+                    + ((f" A cleaning fee of {cfg.money('en', cfg.CLEANING_FEE_EUR)} applies once per stay." if en
+                        else f" Des frais de ménage de {cfg.money('fr', cfg.CLEANING_FEE_EUR)} s'ajoutent une fois par séjour.") if cfg.CLEANING_FEE_EUR else "")))
     if cfg.DEPOSIT_EUR:
         out.append(("Is there a security deposit?" if en else "Y a-t-il une caution ?",
-                    f"Yes, €{cfg.DEPOSIT_EUR}. It is a hold on your card, not a charge, and it is released after your stay if nothing is damaged." if en
-                    else f"Oui, {cfg.DEPOSIT_EUR} €. C'est une empreinte bancaire, pas un débit : elle est levée après le séjour si rien n'est endommagé."))
+                    f"Yes, {cfg.money('en', cfg.DEPOSIT_EUR)}. It is a hold on your card, not a charge, and it is released after your stay if nothing is damaged." if en
+                    else f"Oui, {cfg.money('fr', cfg.DEPOSIT_EUR)}. C'est une empreinte bancaire, pas un débit : elle est levée après le séjour si rien n'est endommagé."))
     out.append(("Is the villa cleaned during my stay?" if en else "Le ménage est-il fait pendant le séjour ?",
                 "Yes, weekly housekeeping is included in the stay." if en else "Oui, un ménage hebdomadaire est inclus dans le séjour."))
     if getattr(cfg, "PETS_ALLOWED", False):
@@ -250,7 +257,7 @@ def faq(lang, cfg):
 
 GUIDES = {
     "pinel": {
-        "img": 2,
+        "img": 3,
         "en": {
             "title": "Pinel Island from Cul-de-Sac: Ferry, Beaches and Snorkeling Guide",
             "desc": "How to spend a day on Pinel Island, Saint Martin: the ferry from Cul-de-Sac, the best beach spots, the snorkeling trail and tips from a villa three minutes from the boat.",
@@ -305,7 +312,7 @@ GUIDES = {
         },
     },
     "gc": {
-        "img": 6,
+        "img": 7,
         "en": {
             "title": "Where to Eat in Grand Case, Saint Martin: Restaurants and Lolos",
             "desc": "A local guide to eating in Grand Case, the culinary capital of Saint Martin: fine dining on the boulevard, beach lolos, Tuesday night street parties and booking tips. Five minutes from our villa.",
@@ -350,7 +357,7 @@ GUIDES = {
         },
     },
     "beaches": {
-        "img": 5,
+        "img": 6,
         "en": {
             "title": "Best Beaches on the French Side of Saint Martin (Local Guide)",
             "desc": "The best beaches of French Saint Martin near Cul-de-Sac: Orient Bay, Pinel Island, Grand Case, Friar's Bay, Happy Bay, Baie Rouge, Baie Longue and Anse Marcel, with tips for families and snorkelers.",

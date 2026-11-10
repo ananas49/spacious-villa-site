@@ -166,16 +166,17 @@ def date_fields(lang, prefix="", names=("checkin", "checkout", "guests")):
 <label for="{prefix}guests">{u['guests']}</label><select id="{prefix}guests" name="{n_g}" data-role="guests">{guest_options(lang)}</select>"""
 
 
-def rates_json():
+def rates_json(lang="fr"):
     """Tarifs pour l'estimation affichée dans le formulaire."""
     s = {x[0]: x for x in getattr(C, "SEASONS", [])}
     if not s:
         return ""
-    d = {"low": [s["Low season"][4], s["Low season"][5]],
-         "high": [s["High season"][4], s["High season"][5]],
-         "holiday": [s["Holidays"][4], s["Holidays"][5]],
+    conv = C.usd if lang == "en" else (lambda x: x)
+    d = {"low": [conv(s["Low season"][4]), s["Low season"][5]],
+         "high": [conv(s["High season"][4]), s["High season"][5]],
+         "holiday": [conv(s["Holidays"][4]), s["Holidays"][5]],
          "holidayFrom": C.HOLIDAYS[0], "holidayTo": C.HOLIDAYS[1],
-         "cleaning": C.CLEANING_FEE_EUR or 0}
+         "cleaning": conv(C.CLEANING_FEE_EUR or 0)}
     return json.dumps(d)
 
 
@@ -204,7 +205,7 @@ def jsonld_rental(lang):
         "checkinTime": C.CHECKIN_TIME or None,
         "checkoutTime": C.CHECKOUT_TIME or None,
         "petsAllowed": bool(getattr(C, "PETS_ALLOWED", False)),
-        "priceRange": (f"From €{C.PRICE_FROM_EUR}/night" if C.PRICE_FROM_EUR else None),
+        "priceRange": (f"From {C.money(lang, C.PRICE_FROM_EUR)}/night" if C.PRICE_FROM_EUR else None),
         "knowsLanguage": ["en", "fr"],
     }
 
@@ -224,14 +225,14 @@ def rates_table(lang):
     rows = ""
     for s in C.SEASONS:
         name, period = (s[0], s[2]) if en else (s[1], s[3])
-        price = f"€{s[4]}" if en else f"{s[4]} €"
+        price = C.money(lang, s[4])
         nights = f"{s[5]} nights min." if en else f"{s[5]} nuits min."
         rows += f"<tr><th scope='row'>{e(name)}<span>{e(period)}</span></th><td>{price}</td><td>{nights}</td></tr>"
     extra = []
     if C.CLEANING_FEE_EUR:
-        extra.append((f"Cleaning fee €{C.CLEANING_FEE_EUR} per stay" if en else f"Ménage {C.CLEANING_FEE_EUR} € par séjour"))
+        extra.append((f"Cleaning fee {C.money(lang, C.CLEANING_FEE_EUR)} per stay" if en else f"Ménage {C.money(lang, C.CLEANING_FEE_EUR)} par séjour"))
     if C.DEPOSIT_EUR:
-        extra.append((f"Deposit €{C.DEPOSIT_EUR} (card hold, not charged)" if en else f"Caution {C.DEPOSIT_EUR} € (empreinte bancaire, non débitée)"))
+        extra.append((f"Deposit {C.money(lang, C.DEPOSIT_EUR)} (card hold, not charged)" if en else f"Caution {C.money(lang, C.DEPOSIT_EUR)} (empreinte bancaire, non débitée)"))
     cap = "Rates per night for the whole villa" if en else "Tarifs par nuit pour toute la villa"
     note = f"<p class='rates-note'>{e(' · '.join(extra))}</p>" if extra else ""
     return f"<table class='rates'><caption>{cap}</caption><tbody>{rows}</tbody></table>{note}"
@@ -281,10 +282,15 @@ def build_home(lang):
 <dl class="spec">{spec}</dl>
 </div></section>
 """
+    out += f"""<section class="mural" aria-labelledby="mural-title">
+<img src="{img_src(1)}" alt="{e(PHOTOS[1][3 + i])}" width="{PHOTOS[1][2][0]}" height="{PHOTOS[1][2][1]}" loading="lazy">
+<div class="wrap mural-cap"><h2 id="mural-title">{e(h['mural_h'])}</h2><p>{e(h['mural_p'])}</p></div>
+</section>
+"""
     gal = ""
     for n in range(len(PHOTOS)):
         gal += f'<button type="button" class="g{n}"><img src="{img_src(n)}" alt="{e(PHOTOS[n][3 + i])}" loading="lazy" width="{PHOTOS[n][2][0]}" height="{PHOTOS[n][2][1]}"></button>'
-    out += f"""<section id="photos" style="padding-top:0"><div class="wrap">
+    out += f"""<section id="photos"><div class="wrap">
 <div class="section-head"><h2>{e(h['photos_h'])}</h2><p>{e(h['photos_p'])}</p></div>
 <div class="gallery">{gal}</div>
 </div></section>
@@ -320,7 +326,7 @@ def build_home(lang):
 <div><h2>{e(h['rev_h'])}</h2><p>{e(h['rev_p'])}</p></div>
 </div></section>
 """
-    price = h["price_from"](C.PRICE_FROM_EUR) if C.PRICE_FROM_EUR else f"<strong>{e(h['price_on_req'])}</strong>"
+    price = h["price_from"](C.money(lang, C.PRICE_FROM_EUR)) if C.PRICE_FROM_EUR else f"<strong>{e(h['price_on_req'])}</strong>"
     direct = "".join(f"<li>{e(x)}</li>" for x in h["direct"])
     thanks = PAGES["thanks"][i]
     smoobu = ""
@@ -332,7 +338,7 @@ def build_home(lang):
 <p class="price-line">{price}</p>
 {rates_table(lang)}
 {smoobu}
-<form id="enquiry" name="enquiry" method="POST" action="{link(path, thanks)}" data-netlify="true" netlify-honeypot="bot-field" data-lang="{lang}" data-rates='{rates_json()}'>
+<form id="enquiry" name="enquiry" method="POST" action="{link(path, thanks)}" data-netlify="true" netlify-honeypot="bot-field" data-lang="{lang}" data-rates='{rates_json(lang)}'>
 <input type="hidden" name="form-name" value="enquiry">
 <input type="hidden" name="subject" value="Nouvelle demande de réservation">
 <p class="hp"><label>Leave empty <input name="bot-field"></label></p>

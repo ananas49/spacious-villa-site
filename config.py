@@ -50,3 +50,18 @@ SEASONS = [
 
 # Période des fêtes (mois-jour) : nuits du 20 décembre au 2 janvier inclus
 HOLIDAYS = ("12-20", "01-02")
+
+# Devise : le site anglais affiche les prix en dollars US, le site français en euros.
+# Les prix sont saisis en euros ; le dollar est calculé avec ce taux puis arrondi à 5 $.
+USD_RATE = 1.12   # taux EUR -> USD (environ 1,12 début novembre 2026)
+
+
+def usd(eur):
+    return int(round(eur * USD_RATE / 5.0) * 5)
+
+
+def money(lang, eur):
+    """Prix formaté : 400 -> « 400 € » en français, « $450 » en anglais."""
+    if lang == "en":
+        return f"${usd(eur):,}"
+    return f"{eur:,} €".replace(",", "\u202f")
