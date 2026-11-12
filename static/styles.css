@@ -270,3 +270,4 @@ dl.spec dd { margin: 0; font-family: var(--display); font-weight: 700; text-alig
 .calc tfoot th, .calc tfoot td { font-weight: 800; font-size: 1.15rem; border-bottom: 0; border-top: 2px solid var(--ink); padding-top: 10px; }
 .calc-note { font-size: .82rem; color: var(--ink-soft); margin: 4px 0 0; }
 .estimate .warn { color: var(--warn); font-family: var(--display); font-size: .9rem; margin: 6px 0 0; }
+.calc-disc td, .calc-disc th { color: var(--lagoon); }

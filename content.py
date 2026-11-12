@@ -236,6 +236,11 @@ def faq(lang, cfg):
                     (f"Our direct rates are: {rows}." if en else f"Nos tarifs en direct : {rows}.")
                     + ((f" A cleaning fee of {cfg.money('en', cfg.CLEANING_FEE_EUR)} applies once per stay." if en
                         else f" Des frais de ménage de {cfg.money('fr', cfg.CLEANING_FEE_EUR)} s'ajoutent une fois par séjour.") if cfg.CLEANING_FEE_EUR else "")))
+    if getattr(cfg, "WEEKLY_DISCOUNT", 0):
+        pct = int(cfg.WEEKLY_DISCOUNT * 100)
+        out.append(("Is there a discount for longer stays?" if en else "Y a-t-il une réduction pour les longs séjours ?",
+                    f"Yes, {pct}% off the nightly rate for stays of {cfg.WEEKLY_MIN_NIGHTS} nights or more. The price calculator applies it automatically." if en
+                    else f"Oui, {pct} % de réduction sur les nuits dès {cfg.WEEKLY_MIN_NIGHTS} nuits. Le calculateur de prix l'applique automatiquement."))
     if cfg.DEPOSIT_EUR:
         out.append(("Is there a security deposit?" if en else "Y a-t-il une caution ?",
                     f"Yes, {cfg.money('en', cfg.DEPOSIT_EUR)}. It is a hold on your card, not a charge, and it is released after your stay if nothing is damaged." if en

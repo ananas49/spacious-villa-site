@@ -48,7 +48,8 @@
       groups[s]++; nights++; sub += R[s][0]; minNeeded = Math.max(minNeeded, R[s][1]);
       d.setUTCDate(d.getUTCDate() + 1);
     }
-    return { groups: groups, order: order, nights: nights, sub: sub, total: sub + R.cleaning, minNeeded: minNeeded };
+    var disc = (R.weekly && nights >= R.weekly[0]) ? Math.round(sub * R.weekly[1]) : 0;
+    return { groups: groups, order: order, nights: nights, sub: sub, disc: disc, total: sub - disc + R.cleaning, minNeeded: minNeeded };
   }
 
   document.querySelectorAll('form[data-rates]').forEach(function (form) {
@@ -85,6 +86,10 @@
           (r.order.length > 1 ? '<span>' + R.labels[s] + '</span>' : '') +
           '</th><td>' + fmt(n * R[s][0]) + '</td></tr>';
       });
+      if (r.disc) {
+        var pct = Math.round(R.weekly[1] * 100);
+        rows += '<tr class="calc-disc"><th scope="row">' + (fr ? 'Réduction semaine (−' + pct + ' %)' : 'Weekly discount (−' + pct + '%)') + '</th><td>−' + fmt(r.disc) + '</td></tr>';
+      }
       rows += '<tr><th scope="row">' + (fr ? 'Ménage' : 'Cleaning fee') + '</th><td>' + fmt(R.cleaning) + '</td></tr>';
       var html = '<table class="calc"><tbody>' + rows + '</tbody><tfoot><tr><th scope="row">Total</th><td>' + fmt(r.total) + '</td></tr></tfoot></table>' +
         '<p class="calc-note">' + (fr ? 'Hors taxe de séjour. Aucuns frais de service.' : 'Excluding tourist tax. No service fees.') + '</p>';
@@ -96,7 +101,7 @@
       box.innerHTML = html;
       if (isMain) {
         setField('Nuits', r.nights + (r.nights < r.minNeeded ? ' (minimum ' + r.minNeeded + ' pour ces dates)' : ''));
-        setField('Estimation', fmt(r.sub) + ' + ' + fmt(R.cleaning) + ' ménage = ' + fmt(r.total) + (fr ? '' : ' (USD)'));
+        setField('Estimation', fmt(r.sub) + (r.disc ? ' − ' + fmt(r.disc) + ' réduction semaine' : '') + ' + ' + fmt(R.cleaning) + ' ménage = ' + fmt(r.total) + (fr ? '' : ' (USD)'));
       }
     };
     ['change', 'input'].forEach(function (ev) { form.addEventListener(ev, update); });

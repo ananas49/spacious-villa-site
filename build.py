@@ -177,6 +177,7 @@ def rates_json(lang="fr"):
          "holiday": [conv(s["Holidays"][4]), s["Holidays"][5]],
          "holidayFrom": C.HOLIDAYS[0], "holidayTo": C.HOLIDAYS[1],
          "cleaning": conv(C.CLEANING_FEE_EUR or 0),
+         "weekly": [C.WEEKLY_MIN_NIGHTS, C.WEEKLY_DISCOUNT],
          "labels": {"low": s["Low season"][0 if lang == "en" else 1],
                     "high": s["High season"][0 if lang == "en" else 1],
                     "holiday": s["Holidays"][0 if lang == "en" else 1]}}
@@ -232,6 +233,9 @@ def rates_table(lang):
         nights = f"{s[5]} nights min." if en else f"{s[5]} nuits min."
         rows += f"<tr><th scope='row'>{e(name)}<span>{e(period)}</span></th><td>{price}</td><td>{nights}</td></tr>"
     extra = []
+    if getattr(C, "WEEKLY_DISCOUNT", 0):
+        pct = int(C.WEEKLY_DISCOUNT * 100)
+        extra.append((f"{pct}% off stays of {C.WEEKLY_MIN_NIGHTS} nights or more" if en else f"−{pct} % dès {C.WEEKLY_MIN_NIGHTS} nuits"))
     if C.CLEANING_FEE_EUR:
         extra.append((f"Cleaning fee {C.money(lang, C.CLEANING_FEE_EUR)} per stay" if en else f"Ménage {C.money(lang, C.CLEANING_FEE_EUR)} par séjour"))
     if C.DEPOSIT_EUR:

@@ -44,8 +44,8 @@ PETS_ALLOWED = True
 # Saisons : (nom EN, nom FR, période EN, période FR, prix/nuit, nuits minimum)
 SEASONS = [
     ("Low season", "Basse saison", "May to November", "Mai à novembre", 430, 3),
-    ("High season", "Haute saison", "December to April", "Décembre à avril", 500, 5),
-    ("Holidays", "Fêtes de fin d'année", "Christmas and New Year", "Noël et Nouvel An", 620, 7),
+    ("High season", "Haute saison", "December to April", "Décembre à avril", 590, 5),
+    ("Holidays", "Fêtes de fin d'année", "Christmas and New Year", "Noël et Nouvel An", 700, 7),
 ]
 
 # Période des fêtes (mois-jour) : nuits du 20 décembre au 2 janvier inclus
@@ -65,3 +65,7 @@ def money(lang, eur):
     if lang == "en":
         return f"${usd(eur):,}"
     return f"{eur:,} €".replace(",", "\u202f")
+
+# Réduction pour les séjours d'une semaine ou plus (comme sur Airbnb)
+WEEKLY_MIN_NIGHTS = 7
+WEEKLY_DISCOUNT = 0.10
