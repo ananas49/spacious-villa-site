@@ -227,7 +227,7 @@ def faq(lang, cfg):
     ]
     if cfg.MIN_NIGHTS:
         out.append(("Is there a minimum stay?" if en else "Y a-t-il une durée minimum de séjour ?",
-                    "Yes: 3 nights in low season, 5 nights in high season and 7 nights over Christmas and New Year." if en else "Oui : 3 nuits en basse saison, 5 nuits en haute saison et 7 nuits pour Noël et le Nouvel An."))
+                    "Yes: 3 nights in low season and over Christmas and New Year, 5 nights in high season." if en else "Oui : 3 nuits en basse saison et pendant les fêtes, 5 nuits en haute saison."))
     if getattr(cfg, "SEASONS", None):
         rows = ("; " if en else " ; ").join(
             (f"{s[0].lower()} ({s[2][0].lower() + s[2][1:] if not s[2].startswith(('May','December','Christmas')) else s[2]}): {cfg.money('en', s[4])} per night, minimum {s[5]} nights" if en

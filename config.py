@@ -45,7 +45,7 @@ PETS_ALLOWED = True
 SEASONS = [
     ("Low season", "Basse saison", "May to November", "Mai à novembre", 430, 3),
     ("High season", "Haute saison", "December to April", "Décembre à avril", 590, 5),
-    ("Holidays", "Fêtes de fin d'année", "Christmas and New Year", "Noël et Nouvel An", 700, 7),
+    ("Holidays", "Fêtes de fin d'année", "Christmas and New Year", "Noël et Nouvel An", 700, 3),
 ]
 
 # Période des fêtes (mois-jour) : nuits du 20 décembre au 2 janvier inclus
