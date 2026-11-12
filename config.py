@@ -28,7 +28,7 @@ SMOOBU_WIDGET_URL = ""
 
 # Avis (annonce actuelle)
 RATING = "4.97"
-REVIEW_COUNT = 66
+REVIEW_COUNT = 67
 SUPERHOST = True
 
 # Coordonnées approximatives (centre de Cul-de-Sac, pas l'adresse exacte)

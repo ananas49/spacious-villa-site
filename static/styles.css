@@ -295,8 +295,8 @@ dl.spec dd { margin: 0; font-family: var(--display); font-weight: 700; text-alig
 section.tight { padding-top: 32px; }
 section.tight-top { margin-top: 24px; }
 .more { font-family: var(--display); font-weight: 700; }
-.gallery-teaser > * { grid-column: auto; }
-.gallery-teaser .g0 { grid-column: span 2; grid-row: span 2; }
+.gallery.gallery-teaser > * { grid-column: auto; }
+.gallery.gallery-teaser > .g0 { grid-column: span 2; grid-row: span 2; }
 .faq-page { max-width: 820px; }
 .form-h, .booking .steps-h { font-size: 1.3rem; letter-spacing: -0.01em; }
 .form-h { margin-top: 28px; }
@@ -330,3 +330,43 @@ section.tight-top { margin-top: 24px; }
 .cta h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); margin-bottom: .2em; }
 .cta p { margin: 0; color: var(--ink-soft); }
 .cta-btns { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* Checkout page: form left, summary card right */
+.checkout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); column-gap: 72px; align-items: start;
+  grid-template-areas: "stay card" "contact card" "how card"; }
+.co-stay { grid-area: stay; } .co-contact { grid-area: contact; } .co-how { grid-area: how; } .co-card { grid-area: card; }
+.co-step { padding: 28px 0; border-bottom: 1px solid var(--line); }
+.co-step:first-of-type { padding-top: 0; }
+.co-how { border-bottom: 0; }
+.co-step h2 { font-size: 1.45rem; letter-spacing: -0.01em; margin-bottom: .8em; }
+.co-line { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); }
+.co-line select { width: auto; min-width: 170px; margin: 0; }
+.co-label { font-family: var(--display); font-weight: 600; font-size: 1rem; color: var(--ink); margin: 0; }
+.co-stay .field-row input { margin-bottom: 16px; }
+.co-submit { width: 100%; margin-top: 14px; padding: 16px 24px; font-size: 1.05rem; }
+.co-card { position: sticky; top: 88px; background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 24px; box-shadow: 0 8px 28px rgba(21,48,42,.10); }
+.co-head { display: flex; gap: 16px; align-items: center; padding-bottom: 20px; }
+.co-head img { width: 104px; height: 104px; object-fit: cover; border-radius: 14px; flex: none; }
+.co-title { font-family: var(--display); font-weight: 700; font-size: 1.2rem; line-height: 1.2; margin: 0 0 4px; }
+.co-sub { font-size: .92rem; color: var(--ink-soft); margin: 0 0 6px; line-height: 1.4; }
+.co-rating { font-family: var(--display); font-size: .92rem; margin: 0; }
+.co-rating span:last-child { color: var(--ink-soft); }
+.co-block { border-top: 1px solid var(--line); padding: 18px 0; }
+.co-block:last-child { padding-bottom: 0; }
+.co-block p { margin: 0; font-size: .95rem; color: var(--ink-soft); }
+.co-block .co-h { font-family: var(--display); font-weight: 700; font-size: 1.05rem; color: var(--ink); margin-bottom: 6px; }
+.co-card .estimate { margin: 6px 0 0; }
+.co-card .calc th, .co-card .calc td { border-bottom: 0; padding: 6px 0; font-size: 1rem; }
+.co-card .calc tfoot th, .co-card .calc tfoot td { border-top: 1px solid var(--line); padding-top: 16px; font-size: 1.2rem; }
+.calc tfoot .cur { display: inline; font-size: .85rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; color: var(--ink); margin-left: 4px; }
+.calc-cap { font-family: var(--display); font-size: .92rem; margin: 0 0 6px !important; color: var(--ink) !important; }
+.calc-seasons td { font-weight: 700; }
+.co-card .calc-pay { color: var(--ink); margin-top: 12px; }
+.co-card .warn { margin-top: 8px; }
+@media (max-width: 900px) {
+  .checkout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stay" "card" "contact" "how"; }
+  .co-card { position: static; margin: 24px 0 4px; }
+  .co-contact { border-top: 0; }
+}
+.intro-score .score { font-size: clamp(4.5rem, 10vw, 7rem); margin: 0 0 16px; }
+.intro-score p:last-child { color: var(--ink-soft); }

@@ -55,9 +55,17 @@ def link(frm, to, anchor=""):
     return rel + anchor
 
 
+def asset_version(name):
+    import hashlib
+    p = os.path.join(os.path.dirname(__file__), "static", name)
+    if not os.path.exists(p):
+        return ""
+    return "?v=" + hashlib.md5(open(p, "rb").read()).hexdigest()[:8]
+
+
 def asset(frm, name):
     if MODE == "prod":
-        return "/" + name
+        return "/" + name + asset_version(name)
     return posixpath.relpath(name, posixpath.dirname(frm) or ".")
 
 
@@ -241,41 +249,6 @@ def whatsapp_block(lang):
             f'{label}</a></div>')
 
 
-def sim_cell(lang, s, n):
-    """Total pour n nuits dans la saison s (tuple SEASONS), ménage compris."""
-    conv = C.usd if lang == "en" else (lambda x: x)
-    if n < s[5]:
-        return f'<span class="sim-min">{e(UI[lang]["sim_min"](s[5]))}</span>'
-    sub = conv(s[4]) * n
-    disc = int(sub * C.WEEKLY_DISCOUNT + 0.5) if n >= C.WEEKLY_MIN_NIGHTS else 0
-    total = sub - disc + conv(C.CLEANING_FEE_EUR or 0)
-    return (f"${total:,}" if lang == "en" else f"{total:,} €".replace(",", " "))
-
-
-def rates_table(lang, nights=5):
-    """Tarifs par saison + simulateur : total pour N nuits, modifiable avec − et +."""
-    if not getattr(C, "SEASONS", None):
-        return ""
-    en = lang == "en"
-    u = UI[lang]
-    keys = {"Low season": "low", "High season": "high", "Holidays": "holiday"}
-    rows = ""
-    for s in C.SEASONS:
-        name, period = (s[0], s[2]) if en else (s[1], s[3])
-        rows += (f"<tr><th scope='row'>{e(name)}<span>{e(period)}</span></th><td>{C.money(lang, s[4])}</td>"
-                 f"<td class='sim-total' data-season='{keys[s[0]]}'>{sim_cell(lang, s, nights)}</td></tr>")
-    extra = []
-    if C.DEPOSIT_EUR:
-        extra.append((f"Deposit {C.money(lang, C.DEPOSIT_EUR)} (card hold, not charged)" if en else f"Caution {C.money(lang, C.DEPOSIT_EUR)} (empreinte bancaire, non débitée)"))
-    note = u["sim_note"](int(C.WEEKLY_DISCOUNT * 100), C.WEEKLY_MIN_NIGHTS) + (" " + extra[0] + "." if extra else "")
-    return f"""<div class="sim" data-sim data-lang="{lang}" data-rates="{e(rates_json(lang))}" data-nights="{nights}">
-<div class="sim-ctl"><span class="sim-q">{e(u['sim_q'])}</span>
-<span class="stepper"><button type="button" class="sim-minus" aria-label="{e(u['fewer'])}">−</button><output class="sim-n" aria-live="polite">{nights}</output><button type="button" class="sim-plus" aria-label="{e(u['more'])}">+</button></span></div>
-<table class="rates"><thead><tr><th scope="col"><span class="vh">{'Season' if en else 'Saison'}</span></th><th scope="col">{e(u['sim_night'])}</th><th scope="col" class="sim-head">{e(u['sim_total'](nights))}</th></tr></thead>
-<tbody>{rows}</tbody></table>
-<p class="rates-note">{e(note)}</p></div>"""
-
-
 def page_head(lang, path, h1, lede):
     u = UI[lang]
     home = PAGES["home"][LANG_IDX[lang]]
@@ -313,10 +286,14 @@ def sec_intro(lang, path, full):
         btn = f'<a class="btn" href="{link(path, PAGES["book"][i])}">{e(u["book"])}</a>'
     else:
         btn = f'<a class="btn btn-ghost" href="{link(path, PAGES["villa"][i])}">{e(u["discover"])}</a>'
+    side = f'<dl class="spec">{spec}</dl>'
+    if not full and C.RATING:
+        side = (f'<div class="intro-score"><p class="score">{C.RATING}<small>{e(h["rev_sub"](C.RATING, C.REVIEW_COUNT))}</small></p>'
+                f'<p>{e(h["rev_p"])}</p></div>')
     return f"""<section id="villa"><div class="wrap intro">
 <div><h2>{e(h['intro_h'])}</h2><p class="lead">{e(h['intro_lead'])}</p>{body}
 <p>{btn}</p></div>
-<dl class="spec">{spec}</dl>
+{side}
 </div></section>
 """
 
@@ -400,44 +377,63 @@ def sec_reviews(lang):
 """
 
 
-def sec_rates(lang, path):
-    """Bloc tarifs + simulateur pour l'accueil."""
-    i = LANG_IDX[lang]
-    h, u = HOME[lang], UI[lang]
-    direct = "".join(f"<li>{e(x)}</li>" for x in h["direct"])
-    return f"""<section id="rates"><div class="wrap booking">
-<div><h2>{e(u['rates_h'])}</h2><p>{e(h['book_p'])}</p><ul class="direct-list">{direct}</ul></div>
-<div class="panel">{rates_table(lang)}
-<a class="btn" style="width:100%" href="{link(path, PAGES['book'][i])}">{e(u['book'])}</a></div>
-</div></section>
-"""
-
-
 def sec_booking(lang, path):
+    """Page de réservation : formulaire à gauche, carte récapitulative à droite (détail du prix)."""
     i = LANG_IDX[lang]
     h, u = HOME[lang], UI[lang]
-    direct = "".join(f"<li>{e(x)}</li>" for x in h["direct"])
+    en = lang == "en"
     steps = "".join(f"<li><strong>{e(s)}</strong><span>{e(d)}</span></li>" for s, d in h["steps"](C.DEPOSIT_PCT, C.BALANCE_DAYS))
     thanks = PAGES["thanks"][i]
     smoobu = ""
     if C.SMOOBU_WIDGET_URL:
         smoobu = f'<iframe class="smoobu-frame" src="{e(C.SMOOBU_WIDGET_URL)}" title="{e(u["book"])}" loading="lazy"></iframe>'
-    return f"""<section id="book" class="tight"><div class="wrap booking">
-<div><ul class="direct-list" style="margin-top:0">{direct}</ul>
-<h2 class="steps-h">{e(h['steps_h'])}</h2><ol class="steps">{steps}</ol></div>
-<div class="panel">
-{rates_table(lang)}
+    rating = ""
+    if C.RATING:
+        r = C.RATING if en else C.RATING.replace(".", ",")
+        rating = (f'<p class="co-rating"><span aria-hidden="true">★</span> {r} '
+                  f'<span>({C.REVIEW_COUNT} {"reviews on Airbnb" if en else "avis sur Airbnb"})</span></p>')
+    t = {
+        "stay": "Your stay" if en else "Votre séjour",
+        "nights": "Nights" if en else "Nuits",
+        "you": "Your details" if en else "Vos coordonnées",
+        "sub": "Entire villa · 4 bedrooms · Cul-de-Sac, Saint Martin" if en else "Villa entière · 4 chambres · Cul-de-Sac, Saint-Martin",
+        "cancel_h": "Free cancellation" if en else "Annulation gratuite",
+        "cancel_p": (f"Full refund up to {C.BALANCE_DAYS} days before arrival." if en
+                     else f"Remboursement intégral jusqu'à {C.BALANCE_DAYS} jours avant l'arrivée."),
+        "price_h": "Price details" if en else "Détail du prix",
+    }
+    return f"""<section id="book" class="tight"><div class="wrap">
 {smoobu}
-<form id="enquiry" name="enquiry" method="POST" action="{link(path, thanks)}" data-netlify="true" netlify-honeypot="bot-field" data-lang="{lang}" data-rates="{e(rates_json(lang))}">
+<form id="enquiry" class="checkout" name="enquiry" method="POST" action="{link(path, thanks)}" data-netlify="true" netlify-honeypot="bot-field" data-lang="{lang}" data-nights="5" data-rates="{e(rates_json(lang))}">
 <input type="hidden" name="form-name" value="enquiry">
 <input type="hidden" name="subject" value="Nouvelle demande de réservation">
 <p class="hp"><label>Leave empty <input name="bot-field"></label></p>
-<h2 class="form-h">{e(h['form_h'])}</h2>
-{date_fields(lang, names=("Arrivée", "Départ", "Voyageurs"))}
-<div class="estimate" id="estimate" data-estimate aria-live="polite"></div>
+
+<div class="co-step co-stay">
+<h2>{t['stay']}</h2>
+<div class="field-row">
+<div><label for="checkin">{u['checkin']}</label><input type="date" id="checkin" name="Arrivée" data-role="checkin" required></div>
+<div><label for="checkout">{u['checkout']}</label><input type="date" id="checkout" name="Départ" data-role="checkout" required></div>
+</div>
+<div class="co-line"><span class="co-label" id="nights-label">{t['nights']}</span>
+<span class="stepper" role="group" aria-labelledby="nights-label"><button type="button" class="sim-minus" aria-label="{e(u['fewer'])}">−</button><output class="sim-n" aria-live="polite">5</output><button type="button" class="sim-plus" aria-label="{e(u['more'])}">+</button></span></div>
+<div class="co-line"><label class="co-label" for="guests">{u['guests']}</label>
+<select id="guests" name="Voyageurs" data-role="guests">{guest_options(lang)}</select></div>
+</div>
+
+<aside class="co-card" aria-label="{t['price_h']}">
+<div class="co-head"><img src="{img_src(0)}" alt="" width="{PHOTOS[0][2][0]}" height="{PHOTOS[0][2][1]}">
+<div><p class="co-title">{e(C.SITE_NAME)}</p><p class="co-sub">{t['sub']}</p>{rating}</div></div>
+<div class="co-block"><p class="co-h">{t['cancel_h']}</p><p>{t['cancel_p']}</p></div>
+<div class="co-block"><p class="co-h">{t['price_h']}</p>
+<div class="estimate" id="estimate" data-estimate aria-live="polite"></div></div>
+</aside>
+
+<div class="co-step co-contact">
+<h2>{t['you']}</h2>
 <input type="hidden" name="Nuits" value="">
 <input type="hidden" name="Estimation" value="">
-<input type="hidden" name="Langue du client" value="{'Anglais' if lang == 'en' else 'Français'}">
+<input type="hidden" name="Langue du client" value="{'Anglais' if en else 'Français'}">
 <label for="name">{e(h['name'])}</label><input id="name" name="Nom" autocomplete="name" required>
 <div class="field-row">
 <div><label for="email">{e(h['email'])}</label><input id="email" name="E-mail" type="email" autocomplete="email" required></div>
@@ -445,11 +441,15 @@ def sec_booking(lang, path):
 </div>
 <label for="message">{e(h['message'])}</label><textarea id="message" name="Message" placeholder="{e(h['message_ph'])}"></textarea>
 <label class="check"><input type="checkbox" required> <span>{e(h['consent'])} <a href="{link(path, PAGES['privacy'][i])}">{e(u['privacy'])}</a></span></label>
-<button class="btn" type="submit" style="width:100%;margin-top:12px">{e(h['send'])}</button>
+<button class="btn co-submit" type="submit">{e(h['send'])}</button>
 <p class="form-note">{e(h['form_note'])}</p>
 {whatsapp_block(lang)}
-</form>
 </div>
+
+<div class="co-step co-how">
+<h2>{e(h['steps_h'])}</h2><ol class="steps">{steps}</ol>
+</div>
+</form>
 </div></section>
 """
 
@@ -508,10 +508,7 @@ def build_home(lang):
     out += sec_intro(lang, path, full=False)
     out += sec_mural(lang)
     out += sec_gallery(lang, path, teaser=True)
-    out += sec_highlights(lang)
-    out += sec_rates(lang, path)
-    out += sec_reviews(lang)
-    out += sec_guides(lang, path).replace('<section id="guides">', '<section id="guides" class="location">')
+    out += cta(lang, path)
     out += "</main>\n"
     out += footer(lang, path)
     return path, out
@@ -530,7 +527,7 @@ def build_page(lang, key):
     img = {"villa": 0, "photos": 0, "location": 3, "book": 1, "faq": 0}[key]
     body = ""
     if key == "villa":
-        body = sec_intro(lang, path, full=True).replace('<section id="villa">', '<section id="villa" class="tight">') + sec_highlights(lang) + sec_amenities(lang).replace('class="tight"', '') + cta(lang, path)
+        body = sec_intro(lang, path, full=True).replace('<section id="villa">', '<section id="villa" class="tight">') + sec_highlights(lang) + sec_amenities(lang).replace('class="tight"', '') + sec_reviews(lang) + cta(lang, path)
     elif key == "photos":
         body = sec_gallery(lang, path) + cta(lang, path)
     elif key == "location":
