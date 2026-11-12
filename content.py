@@ -54,7 +54,8 @@ PAGES = {
 
 UI = {
     "en": {
-        "nav": [("villa", "The villa"), ("photos", "Photos"), ("location", "Location"), ("book", "Rates"), ("faq", "FAQ")],
+        "nav": [("villa", "The villa"), ("photos", "Photos"), ("location", "Location"), ("faq", "FAQ")],
+        "book_nav": "Rates and booking",
         "menu": "Menu", "see_photos": "See all photos", "discover": "Discover the villa", "rates_h": "Rates",
         "sim_q": "How many nights?", "sim_night": "Per night", "sim_total": lambda n: f"Total for {n} nights",
         "sim_note": lambda pct, k: f"Totals include the cleaning fee. {pct}% off from {k} nights.",
@@ -73,7 +74,8 @@ UI = {
         "contact": "Contact",
     },
     "fr": {
-        "nav": [("villa", "La villa"), ("photos", "Photos"), ("location", "Emplacement"), ("book", "Tarifs"), ("faq", "FAQ")],
+        "nav": [("villa", "La villa"), ("photos", "Photos"), ("location", "Emplacement"), ("faq", "FAQ")],
+        "book_nav": "Tarifs et réservation",
         "menu": "Menu", "see_photos": "Voir toutes les photos", "discover": "Découvrir la villa", "rates_h": "Tarifs",
         "sim_q": "Combien de nuits ?", "sim_night": "Par nuit", "sim_total": lambda n: f"Total pour {n} nuits",
         "sim_note": lambda pct, k: f"Les totaux incluent le ménage. −{pct} % dès {k} nuits.",
@@ -258,13 +260,15 @@ def faq(lang, cfg):
         out.append(("Is there a minimum stay?" if en else "Y a-t-il une durée minimum de séjour ?",
                     "Yes: 3 nights in low season and over Christmas and New Year, 5 nights in high season." if en else "Oui : 3 nuits en basse saison et pendant les fêtes, 5 nuits en haute saison."))
     if getattr(cfg, "SEASONS", None):
-        rows = ("; " if en else " ; ").join(
-            (f"{s[0].lower()} ({s[2][0].lower() + s[2][1:] if not s[2].startswith(('May','December','Christmas')) else s[2]}): {cfg.money('en', s[4])} per night, minimum {s[5]} nights" if en
-             else f"{s[1].lower()} ({s[3][0].lower() + s[3][1:] if not s[3].startswith('Noël') else s[3]}), {cfg.money('fr', s[4])} la nuit et {s[5]} nuits minimum") for s in cfg.SEASONS)
+        lo, hi, ho = (cfg.money(lang, x[4]) for x in cfg.SEASONS)
+        clean = cfg.money(lang, cfg.CLEANING_FEE_EUR) if cfg.CLEANING_FEE_EUR else None
         out.append(("How much does the villa cost per night?" if en else "Quel est le prix de la villa par nuit ?",
-                    (f"Our direct rates are: {rows}." if en else f"Nos tarifs en direct : {rows}.")
-                    + ((f" A cleaning fee of {cfg.money('en', cfg.CLEANING_FEE_EUR)} applies once per stay." if en
-                        else f" Des frais de ménage de {cfg.money('fr', cfg.CLEANING_FEE_EUR)} s'ajoutent une fois par séjour.") if cfg.CLEANING_FEE_EUR else "")))
+                    ((f"The price depends on your dates: {lo} per night from May to November, {hi} from December to April, and {ho} over Christmas and New Year. "
+                      f"The booking calendar shows the price of each night and the total for your stay."
+                      + (f" A cleaning fee of {clean} applies once per stay." if clean else "")) if en else
+                     (f"Le prix dépend de vos dates : {lo} la nuit de mai à novembre, {hi} de décembre à avril, et {ho} pour Noël et le Nouvel An. "
+                      f"Le calendrier de réservation affiche le prix de chaque nuit et le total de votre séjour."
+                      + (f" Des frais de ménage de {clean} s'ajoutent une fois par séjour." if clean else "")))))
     if getattr(cfg, "WEEKLY_DISCOUNT", 0):
         pct = int(cfg.WEEKLY_DISCOUNT * 100)
         out.append(("Is there a discount for longer stays?" if en else "Y a-t-il une réduction pour les longs séjours ?",

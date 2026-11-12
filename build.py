@@ -125,7 +125,7 @@ def header(lang, key, path):
 <a class="lang" href="{link(path, other_path)}" hreflang="{other}" lang="{other}" aria-label="{e(u['switch_label'])}">{u['switch']}</a>
 <a class="btn header-cta" href="{link(path, PAGES['book'][i])}">{e(u['book'])}</a>
 <details class="menu"><summary aria-label="{e(u['menu'])}"><span></span><span></span><span></span></summary>
-<nav aria-label="{e(u['menu'])}">{links}</nav></details>
+<nav aria-label="{e(u['menu'])}">{links}<a href="{link(path, PAGES['book'][i])}"{' aria-current="page"' if key == 'book' else ''}>{e(u['book_nav'])}</a></nav></details>
 </div></header>
 """
 
@@ -151,7 +151,7 @@ def footer(lang, path):
 <div><h2>{e(C.SITE_NAME)}</h2><p>{e(u['footer_about'])}</p>{contact_html}</div>
 <div><h2>{u['footer_guides']}</h2><ul>{guides}</ul></div>
 <div><h2>{u['footer_info']}</h2><ul>
-<li><a href="{link(path, PAGES['book'][i])}">{e(u['nav'][3][1])}</a></li>
+<li><a href="{link(path, PAGES['book'][i])}">{e(u['book_nav'])}</a></li>
 <li><a href="{link(path, PAGES['faq'][i])}">FAQ</a></li>
 <li><a href="{link(path, PAGES['legal'][i])}">{u['legal']}</a></li>
 <li><a href="{link(path, PAGES['privacy'][i])}">{u['privacy']}</a></li>
@@ -415,6 +415,7 @@ def sec_booking(lang, path):
 <div><label for="checkin">{u['checkin']}</label><input type="date" id="checkin" name="Arrivée" data-role="checkin" required></div>
 <div><label for="checkout">{u['checkout']}</label><input type="date" id="checkout" name="Départ" data-role="checkout" required></div>
 </div>
+<div class="cal" data-cal aria-label="{'Calendar with nightly prices' if en else 'Calendrier avec le prix par nuit'}"></div>
 <div class="co-line"><span class="co-label" id="nights-label">{t['nights']}</span>
 <span class="stepper" role="group" aria-labelledby="nights-label"><button type="button" class="sim-minus" aria-label="{e(u['fewer'])}">−</button><output class="sim-n" aria-live="polite">5</output><button type="button" class="sim-plus" aria-label="{e(u['more'])}">+</button></span></div>
 <div class="co-line"><label class="co-label" for="guests">{u['guests']}</label>

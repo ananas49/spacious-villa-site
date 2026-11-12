@@ -39,14 +39,14 @@
   }
 
   // Price calculator (itemized, like a booking site) + clear email subject for the owner
+  function seasonOf(R, d) {
+    var k = ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' + ('0' + d.getUTCDate()).slice(-2);
+    if (k >= R.holidayFrom || k <= R.holidayTo) return 'holiday';
+    var m = d.getUTCMonth() + 1;
+    return (m === 12 || m <= 4) ? 'high' : 'low';
+  }
   function calc(R, a, b) {
-    var md = function (d) { return ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' + ('0' + d.getUTCDate()).slice(-2); };
-    var season = function (d) {
-      var k = md(d);
-      if (k >= R.holidayFrom || k <= R.holidayTo) return 'holiday';
-      var m = d.getUTCMonth() + 1;
-      return (m === 12 || m <= 4) ? 'high' : 'low';
-    };
+    var season = function (d) { return seasonOf(R, d); };
     var d = new Date(a + 'T00:00:00Z'), end = new Date(b + 'T00:00:00Z');
     var groups = {}, order = [], nights = 0, sub = 0, minNeeded = 0;
     while (d < end) {
@@ -87,23 +87,62 @@
                 : R.depositPct + '% deposit at booking: <strong>' + fmt(dep) + '</strong>. Balance due ' + R.balanceDays + ' days before arrival.';
     };
 
-    // No dates yet: total for N nights in each season
-    var bySeason = function () {
-      var rows = '';
-      ['low', 'high', 'holiday'].forEach(function (s) {
-        var cell;
-        if (n < R[s][1]) {
-          cell = '<span class="sim-min">' + (fr ? R[s][1] + ' nuits min.' : R[s][1] + ' nights min.') + '</span>';
-        } else {
-          var sub = R[s][0] * n, disc = (R.weekly && n >= R.weekly[0]) ? Math.round(sub * R.weekly[1]) : 0;
-          cell = fmt(sub - disc + R.cleaning);
-        }
-        rows += '<tr><th scope="row">' + R.labels[s] + '<span>' + fmt(R[s][0]) + (fr ? ' la nuit' : ' per night') + '</span></th><td>' + cell + '</td></tr>';
-      });
-      return '<p class="calc-cap">' + (fr ? 'Pour ' + n + ' ' + nightWord(n) + ', ménage compris :' : 'For ' + n + ' ' + nightWord(n) + ', cleaning included:') + '</p>' +
-        '<table class="calc calc-seasons"><tbody>' + rows + '</tbody></table>' +
-        '<p class="calc-pay">' + (fr ? 'Choisissez vos dates pour le prix exact.' : 'Choose your dates for the exact price.') + '</p>' + noteHtml;
+    // No dates yet: invite to pick dates in the calendar
+    var minPrice = Math.min(R.low[0], R.high[0], R.holiday[0]);
+    var restHtml = function () {
+      return '<p class="calc-from">' + (fr ? 'À partir de <strong>' + fmt(minPrice) + '</strong> la nuit' : 'From <strong>' + fmt(minPrice) + '</strong> per night') + '</p>' +
+        '<p class="calc-pay">' + (fr ? 'Sélectionnez vos dates dans le calendrier pour voir le prix de votre séjour.' : 'Select your dates in the calendar to see the price of your stay.') + '</p>' + noteHtml;
     };
+
+    // Calendar with the price of each night (booking page only)
+    var cal = form.querySelector('[data-cal]'), view = null;
+    var calRender = function () {
+      if (!cal) return;
+      var a = inEl.value, b = outEl.value;
+      if (!view) { var base = new Date((a || today) + 'T00:00:00Z'); view = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), 1)); }
+      var loc = fr ? 'fr-FR' : 'en-US', first = fr ? 1 : 0;
+      var todayD = new Date(today + 'T00:00:00Z');
+      var minView = new Date(Date.UTC(todayD.getUTCFullYear(), todayD.getUTCMonth(), 1));
+      var maxView = new Date(Date.UTC(todayD.getUTCFullYear(), todayD.getUTCMonth() + 17, 1));
+      var html = '<div class="cal-nav"><button type="button" class="cal-prev" aria-label="' + (fr ? 'Mois précédent' : 'Previous month') + '"' + (view <= minView ? ' disabled' : '') + '>‹</button>' +
+        '<button type="button" class="cal-next" aria-label="' + (fr ? 'Mois suivant' : 'Next month') + '"' + (view >= maxView ? ' disabled' : '') + '>›</button></div><div class="cal-months">';
+      for (var m = 0; m < 2; m++) {
+        var ms = new Date(Date.UTC(view.getUTCFullYear(), view.getUTCMonth() + m, 1));
+        var title = new Intl.DateTimeFormat(loc, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(ms);
+        html += '<div class="cal-month' + (m ? ' cal-second' : '') + '"><p class="cal-title">' + title + '</p><div class="cal-grid">';
+        for (var w = 0; w < 7; w++) {
+          var wd = new Date(Date.UTC(2024, 0, 7 + first + w)); // 7 Jan 2024 is a Sunday
+          html += '<span class="cal-wd">' + new Intl.DateTimeFormat(loc, { weekday: 'narrow', timeZone: 'UTC' }).format(wd) + '</span>';
+        }
+        var offset = (ms.getUTCDay() - first + 7) % 7;
+        for (var o = 0; o < offset; o++) html += '<span></span>';
+        var days = new Date(Date.UTC(ms.getUTCFullYear(), ms.getUTCMonth() + 1, 0)).getUTCDate();
+        for (var dn = 1; dn <= days; dn++) {
+          var d = new Date(Date.UTC(ms.getUTCFullYear(), ms.getUTCMonth(), dn)), v = iso(d);
+          var price = R[seasonOf(R, d)][0];
+          var cls = 'cal-day';
+          if (a && v === a) cls += ' is-start';
+          if (b && v === b) cls += ' is-end';
+          if (a && b && v > a && v < b) cls += ' in-range';
+          var label = new Intl.DateTimeFormat(loc, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(d) + ', ' + fmt(price);
+          html += '<button type="button" class="' + cls + '" data-date="' + v + '" aria-label="' + label + '"' + (v < today ? ' disabled' : '') +
+            ((v === a || v === b) ? ' aria-pressed="true"' : '') + '><b>' + dn + '</b><i>' + (v < today ? '' : fmt(price)) + '</i></button>';
+        }
+        html += '</div></div>';
+      }
+      cal.innerHTML = html + '</div>';
+    };
+    if (cal) {
+      cal.addEventListener('click', function (ev) {
+        var t = ev.target.closest('button'); if (!t || t.disabled) return;
+        if (t.classList.contains('cal-prev')) { view = new Date(Date.UTC(view.getUTCFullYear(), view.getUTCMonth() - 1, 1)); calRender(); return; }
+        if (t.classList.contains('cal-next')) { view = new Date(Date.UTC(view.getUTCFullYear(), view.getUTCMonth() + 1, 1)); calRender(); return; }
+        var v = t.dataset.date; if (!v) return;
+        if (!inEl.value || outEl.value || v <= inEl.value) { inEl.value = v; outEl.value = ''; outEl.min = addDays(v, 1); }
+        else { outEl.value = v; }
+        update();
+      });
+    }
 
     var update = function () {
       var a = inEl.value, b = outEl.value, g = q(form, 'guests').value;
@@ -119,7 +158,8 @@
       if (valid) n = Math.min(MAX, between(a, b));
       if (nOut) { nOut.textContent = n; minus.disabled = n <= MIN; plus.disabled = n >= MAX; }
       if (!valid) {
-        box.innerHTML = isMain ? bySeason() : '';
+        box.innerHTML = isMain ? restHtml() : '';
+        calRender();
         if (isMain) { setField('Nuits', ''); setField('Estimation', ''); }
         return;
       }
@@ -128,7 +168,6 @@
       r.order.forEach(function (s) {
         var k = r.groups[s];
         rows += '<tr><th scope="row">' + k + ' ' + nightWord(k) + ' × ' + fmt(R[s][0]) +
-          (r.order.length > 1 ? '<span>' + R.labels[s] + '</span>' : '') +
           '</th><td>' + fmt(k * R[s][0]) + '</td></tr>';
       });
       if (r.disc) {
@@ -144,6 +183,7 @@
           : 'The minimum stay for these dates is ' + r.minNeeded + ' nights.') + '</p>';
       }
       box.innerHTML = html;
+      calRender();
       if (isMain) {
         setField('Nuits', r.nights + (r.nights < r.minNeeded ? ' (minimum ' + r.minNeeded + ' pour ces dates)' : ''));
         setField('Estimation', fmt(r.sub) + (r.disc ? ' − ' + fmt(r.disc) + ' réduction semaine' : '') + ' + ' + fmt(R.cleaning) + ' ménage = ' + fmt(r.total) + (fr ? '' : ' (USD)'));

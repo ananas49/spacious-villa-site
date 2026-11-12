@@ -370,3 +370,30 @@ section.tight-top { margin-top: 24px; }
 }
 .intro-score .score { font-size: clamp(4.5rem, 10vw, 7rem); margin: 0 0 16px; }
 .intro-score p:last-child { color: var(--ink-soft); }
+
+/* Booking calendar with nightly prices */
+.cal { position: relative; margin: 4px 0 18px; }
+.cal:empty { display: none; }
+.cal-nav { position: absolute; left: 0; right: 0; top: 0; display: flex; justify-content: space-between; pointer-events: none; }
+.cal-nav button { pointer-events: auto; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-size: 1.3rem; line-height: 1; cursor: pointer; }
+.cal-nav button:hover { border-color: var(--ink); }
+.cal-nav button:disabled { opacity: .3; cursor: default; }
+.cal-months { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.cal-title { font-family: var(--display); font-weight: 700; text-align: center; margin: 0 0 10px; line-height: 38px; text-transform: capitalize; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 2px; }
+.cal-wd { font-family: var(--display); font-size: .75rem; color: var(--ink-soft); text-align: center; padding-bottom: 6px; }
+.cal-day { border: 0; background: transparent; color: var(--ink); padding: 5px 0 4px; cursor: pointer; display: grid; justify-items: center; gap: 1px; border-radius: 10px; font-family: var(--display); }
+.cal-day b { font-weight: 600; font-size: .95rem; }
+.cal-day i { font-style: normal; font-size: .64rem; color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cal-day:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.cal-day:disabled { color: var(--line); cursor: default; text-decoration: line-through; }
+.cal-day.in-range { background: var(--lagoon-soft); border-radius: 0; }
+.cal-day.is-start, .cal-day.is-end { background: var(--ink); color: var(--plaster); }
+.cal-day.is-start i, .cal-day.is-end i { color: var(--plaster); }
+.calc-from { font-family: var(--display); font-size: 1.05rem; color: var(--ink) !important; }
+.calc-from strong { font-size: 1.5rem; }
+@media (max-width: 620px) {
+  .cal-months { grid-template-columns: minmax(0, 1fr); }
+  .cal-second { display: none; }
+  .cal-day i { font-size: .68rem; }
+}
