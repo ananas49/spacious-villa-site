@@ -35,8 +35,8 @@ SUPERHOST = True
 GEO = (18.0960, -63.0450)
 
 # Mentions légales
-LEGAL_OWNER = ""            # nom du loueur ou de la société
-LEGAL_ADDRESS = ""
+LEGAL_OWNER = "Fanilia Baly"            # nom du loueur ou de la société
+LEGAL_ADDRESS = "Mont Vernon 1, lot 19, Cul-de-Sac, 97150 Saint-Martin"
 LEGAL_SIRET = ""
 
 PETS_ALLOWED = True

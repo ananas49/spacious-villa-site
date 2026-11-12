@@ -457,7 +457,7 @@ def build_simple(lang, key):
     if key == "legal":
         title = "Legal notice" if en else "Mentions légales"
         body = f"""<h2>{'Publisher' if en else 'Éditeur du site'}</h2>
-<p>{todo(C.LEGAL_OWNER, lang)}<br>{todo(C.LEGAL_ADDRESS, lang)}<br>SIRET : {todo(C.LEGAL_SIRET, lang)}<br>{contact_line(lang)}</p>
+<p>{todo(C.LEGAL_OWNER, lang)}<br>{todo(C.LEGAL_ADDRESS, lang)}{('<br>SIRET : ' + e(C.LEGAL_SIRET)) if C.LEGAL_SIRET else ''}<br>{contact_line(lang)}</p>
 <h2>{'Hosting' if en else 'Hébergement'}</h2>
 <p>Netlify, Inc. – San Francisco, {'United States' if en else 'États-Unis'} – netlify.com</p>
 <h2>{'Photos and content' if en else 'Photos et contenus'}</h2>
