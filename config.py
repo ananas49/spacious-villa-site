@@ -10,7 +10,7 @@ SITE_TAGLINE_FR = "Villa avec piscine privée à Cul-de-Sac, Saint-Martin"
 
 # Contact (laisser vide pour masquer)
 EMAIL = ""            # ex. "hello@spaciousvillasxm.com"
-WHATSAPP = ""         # format international sans + ni espaces, ex. "590690000000"
+WHATSAPP = "33766440125"         # format international sans + ni espaces, ex. "590690000000"
 INSTAGRAM = ""        # ex. "https://instagram.com/spaciousvillasxm"
 
 # Tarifs et conditions (None = « sur demande » / masqué)
@@ -69,3 +69,17 @@ def money(lang, eur):
 # Réduction pour les séjours d'une semaine ou plus (comme sur Airbnb)
 WEEKLY_MIN_NIGHTS = 7
 WEEKLY_DISCOUNT = 0.10
+
+
+def whatsapp_display():
+    """+33766440125 -> +33 7 66 44 01 25"""
+    n = WHATSAPP
+    if n.startswith("33") and len(n) == 11:
+        r = n[2:]
+        return "+33 " + r[0] + " " + " ".join(r[i:i + 2] for i in range(1, 9, 2))
+    return "+" + n
+
+
+def whatsapp_link(text=""):
+    from urllib.parse import quote
+    return f"https://wa.me/{WHATSAPP}" + (f"?text={quote(text)}" if text else "")

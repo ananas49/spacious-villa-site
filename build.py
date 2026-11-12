@@ -127,7 +127,7 @@ def footer(lang, path):
     if C.EMAIL:
         contact.append(f'<li><a href="mailto:{e(C.EMAIL)}">{e(C.EMAIL)}</a></li>')
     if C.WHATSAPP:
-        contact.append(f'<li><a href="https://wa.me/{e(C.WHATSAPP)}">WhatsApp</a></li>')
+        contact.append(f'<li><a href="{e(C.whatsapp_link())}" rel="noopener">WhatsApp : {e(C.whatsapp_display())}</a></li>')
     if C.INSTAGRAM:
         contact.append(f'<li><a href="{e(C.INSTAGRAM)}">Instagram</a></li>')
     contact_html = f"<h2>{u['contact']}</h2><ul>{''.join(contact)}</ul>" if contact else ""
@@ -220,6 +220,19 @@ def strip_none(d):
     if isinstance(d, list):
         return [strip_none(x) for x in d]
     return d
+
+
+def whatsapp_block(lang):
+    if not C.WHATSAPP:
+        return ""
+    en = lang == "en"
+    q = "A question before booking?" if en else "Une question avant de réserver ?"
+    label = "Message us on WhatsApp" if en else "Écrivez-nous sur WhatsApp"
+    msg = ("Hello, I have a question about Spacious Villa in Cul-de-Sac." if en
+           else "Bonjour, j'ai une question sur Spacious Villa à Cul-de-Sac.")
+    return (f'<div class="wa"><p>{q}</p><a class="btn btn-ghost wa-btn" href="{e(C.whatsapp_link(msg))}" rel="noopener">'
+            f'<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2s.2-1.1.1-1.2l-.4-.2z"/></svg>'
+            f'{label}</a></div>')
 
 
 def rates_table(lang):
@@ -365,6 +378,7 @@ def build_home(lang):
 <label class="check"><input type="checkbox" required> <span>{e(h['consent'])} <a href="{link(path, PAGES['privacy'][i])}">{e(u['privacy'])}</a></span></label>
 <button class="btn" type="submit" style="width:100%;margin-top:12px">{e(h['send'])}</button>
 <p class="form-note">{e(h['form_note'])}</p>
+{whatsapp_block(lang)}
 </form>
 </div>
 </div></section>
@@ -423,6 +437,15 @@ def build_guide(lang, key):
     return path, out
 
 
+def contact_line(lang):
+    parts = []
+    if C.EMAIL:
+        parts.append(("Email" if lang == "en" else "E-mail") + " : " + e(C.EMAIL))
+    if C.WHATSAPP:
+        parts.append("WhatsApp : " + e(C.whatsapp_display()))
+    return " · ".join(parts) if parts else todo("", lang)
+
+
 def todo(v, lang):
     return e(v) if v else ("[to be completed]" if lang == "en" else "[à compléter]")
 
@@ -434,7 +457,7 @@ def build_simple(lang, key):
     if key == "legal":
         title = "Legal notice" if en else "Mentions légales"
         body = f"""<h2>{'Publisher' if en else 'Éditeur du site'}</h2>
-<p>{todo(C.LEGAL_OWNER, lang)}<br>{todo(C.LEGAL_ADDRESS, lang)}<br>SIRET : {todo(C.LEGAL_SIRET, lang)}<br>{'Email' if en else 'E-mail'} : {todo(C.EMAIL, lang)}</p>
+<p>{todo(C.LEGAL_OWNER, lang)}<br>{todo(C.LEGAL_ADDRESS, lang)}<br>SIRET : {todo(C.LEGAL_SIRET, lang)}<br>{contact_line(lang)}</p>
 <h2>{'Hosting' if en else 'Hébergement'}</h2>
 <p>Netlify, Inc. – San Francisco, {'United States' if en else 'États-Unis'} – netlify.com</p>
 <h2>{'Photos and content' if en else 'Photos et contenus'}</h2>
@@ -445,13 +468,13 @@ def build_simple(lang, key):
             body = f"""<p>When you send a booking request, we collect your name, email, phone number, travel dates, number of guests and your message. We use them only to answer your request and, if you book, to manage your stay.</p>
 <h2>Who receives your data</h2><p>Only the villa owners. The form is processed by our host, Netlify, and bookings may be managed in our booking software. We never sell or share your data for advertising.</p>
 <h2>How long we keep it</h2><p>Requests that do not lead to a booking are deleted after 12 months. Booking records are kept for as long as required by accounting and tax law.</p>
-<h2>Your rights</h2><p>You can ask to access, correct or delete your data at any time by writing to {todo(C.EMAIL, lang)}. You can also file a complaint with the French data protection authority (CNIL).</p>
+<h2>Your rights</h2><p>You can ask to access, correct or delete your data at any time by contacting us ({contact_line(lang)}). You can also file a complaint with the French data protection authority (CNIL).</p>
 <h2>Cookies</h2><p>This site does not use advertising or tracking cookies.</p>"""
         else:
             body = f"""<p>Lorsque vous envoyez une demande de réservation, nous recueillons votre nom, votre e-mail, votre téléphone, vos dates, le nombre de voyageurs et votre message. Ces données servent uniquement à répondre à votre demande et, si vous réservez, à organiser votre séjour.</p>
 <h2>Destinataires</h2><p>Seuls les propriétaires de la villa. Le formulaire est traité par notre hébergeur, Netlify, et les réservations peuvent être gérées dans notre logiciel de réservation. Vos données ne sont jamais vendues ni utilisées à des fins publicitaires.</p>
 <h2>Durée de conservation</h2><p>Les demandes sans suite sont supprimées après 12 mois. Les données de réservation sont conservées pendant la durée imposée par les obligations comptables et fiscales.</p>
-<h2>Vos droits</h2><p>Vous pouvez à tout moment demander l'accès, la rectification ou la suppression de vos données en écrivant à {todo(C.EMAIL, lang)}. Vous pouvez aussi adresser une réclamation à la CNIL.</p>
+<h2>Vos droits</h2><p>Vous pouvez à tout moment demander l'accès, la rectification ou la suppression de vos données en nous contactant ({contact_line(lang)}). Vous pouvez aussi adresser une réclamation à la CNIL.</p>
 <h2>Cookies</h2><p>Ce site n'utilise aucun cookie publicitaire ni de suivi.</p>"""
     else:  # thanks
         title = "Request sent" if en else "Demande envoyée"
