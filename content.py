@@ -124,6 +124,13 @@ HOME = {
         "book_h": "Book direct",
         "book_p": "Booking with us directly means a simpler stay and a better deal.",
         "direct": ["No platform service fees", "Talk directly to the owners, before and during your stay", "Flexible on special requests, early arrivals and long stays", "Secure card payment"],
+        "steps_h": "How booking works",
+        "steps": lambda pct, days: [
+            ("Send your dates", "We confirm availability within 24 hours."),
+            (f"Pay a {pct}% deposit", "You receive a secure payment link and pay by card. Your dates are then confirmed."),
+            (f"Pay the balance {days} days before arrival", f"For a stay starting in less than {days} days, the full amount is due at booking."),
+            ("Receive your arrival details", "Address, directions and self check-in instructions, a few days before you land."),
+        ],
         "price_on_req": "Rate on request",
         "price_from": lambda p: f"From <strong>{p}</strong> per night",
         "form_h": "Request your dates",
@@ -181,6 +188,13 @@ HOME = {
         "book_h": "Réservez en direct",
         "book_p": "Réserver directement avec nous, c'est un séjour plus simple et un meilleur prix.",
         "direct": ["Aucuns frais de service de plateforme", "Un contact direct avec les propriétaires, avant et pendant le séjour", "De la souplesse pour les demandes spéciales, arrivées anticipées et longs séjours", "Paiement sécurisé par carte"],
+        "steps_h": "Comment se passe la réservation",
+        "steps": lambda pct, days: [
+            ("Envoyez vos dates", "Nous confirmons la disponibilité sous 24 heures."),
+            (f"Réglez un acompte de {pct} %", "Vous recevez un lien de paiement sécurisé et payez par carte. Vos dates sont alors confirmées."),
+            (f"Réglez le solde {days} jours avant l'arrivée", f"Pour un séjour qui commence dans moins de {days} jours, la totalité est due à la réservation."),
+            ("Recevez vos informations d'arrivée", "Adresse, itinéraire et instructions d'arrivée autonome, quelques jours avant votre départ."),
+        ],
         "price_on_req": "Tarif sur demande",
         "price_from": lambda p: f"À partir de <strong>{p}</strong> la nuit",
         "form_h": "Demandez vos dates",
@@ -241,6 +255,11 @@ def faq(lang, cfg):
         out.append(("Is there a discount for longer stays?" if en else "Y a-t-il une réduction pour les longs séjours ?",
                     f"Yes, {pct}% off the nightly rate for stays of {cfg.WEEKLY_MIN_NIGHTS} nights or more. The price calculator applies it automatically." if en
                     else f"Oui, {pct} % de réduction sur les nuits dès {cfg.WEEKLY_MIN_NIGHTS} nuits. Le calculateur de prix l'applique automatiquement."))
+    if getattr(cfg, "DEPOSIT_PCT", 0):
+        p, d = cfg.DEPOSIT_PCT, cfg.BALANCE_DAYS
+        out.append(("How do I pay?" if en else "Comment se passe le paiement ?",
+                    (f"A {p}% deposit confirms your booking, paid by card through a secure payment link. The balance is due {d} days before arrival. If your stay starts in less than {d} days, the full amount is due at booking." if en
+                     else f"Un acompte de {p} % confirme votre réservation, réglé par carte via un lien de paiement sécurisé. Le solde est dû {d} jours avant l'arrivée. Si votre séjour commence dans moins de {d} jours, la totalité est due à la réservation.")))
     if cfg.DEPOSIT_EUR:
         out.append(("Is there a security deposit?" if en else "Y a-t-il une caution ?",
                     f"Yes, {cfg.money('en', cfg.DEPOSIT_EUR)}. It is a hold on your card, not a charge, and it is released after your stay if nothing is damaged." if en

@@ -83,3 +83,7 @@ def whatsapp_display():
 def whatsapp_link(text=""):
     from urllib.parse import quote
     return f"https://wa.me/{WHATSAPP}" + (f"?text={quote(text)}" if text else "")
+
+# Paiement : acompte à la réservation, solde avant l'arrivée
+DEPOSIT_PCT = 30          # acompte en % du total
+BALANCE_DAYS = 30         # solde dû X jours avant l'arrivée

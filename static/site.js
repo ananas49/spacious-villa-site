@@ -63,6 +63,17 @@
     var setField = function (n, v) { var el = form.querySelector('[name="' + n + '"]'); if (el) el.value = v; };
     var nightWord = function (n) { return fr ? (n > 1 ? 'nuits' : 'nuit') : (n > 1 ? 'nights' : 'night'); };
 
+    var payLine = function (total, checkin) {
+      var days = Math.round((new Date(checkin + 'T00:00:00Z') - new Date(today + 'T00:00:00Z')) / 86400000);
+      if (!R.depositPct || days < R.balanceDays) {
+        return fr ? 'Séjour dans moins de ' + R.balanceDays + ' jours : totalité due à la réservation.'
+                  : 'Stay within ' + R.balanceDays + ' days: full amount due at booking.';
+      }
+      var dep = Math.round(total * R.depositPct / 100);
+      return fr ? 'Acompte de ' + R.depositPct + ' % à la réservation : <strong>' + fmt(dep) + '</strong>. Solde ' + R.balanceDays + ' jours avant l\'arrivée.'
+                : R.depositPct + '% deposit at booking: <strong>' + fmt(dep) + '</strong>. Balance due ' + R.balanceDays + ' days before arrival.';
+    };
+
     var update = function () {
       var a = q(form, 'checkin').value, b = q(form, 'checkout').value, g = q(form, 'guests').value;
       if (isMain) {
@@ -92,6 +103,7 @@
       }
       rows += '<tr><th scope="row">' + (fr ? 'Ménage' : 'Cleaning fee') + '</th><td>' + fmt(R.cleaning) + '</td></tr>';
       var html = '<table class="calc"><tbody>' + rows + '</tbody><tfoot><tr><th scope="row">Total</th><td>' + fmt(r.total) + '</td></tr></tfoot></table>' +
+        '<p class="calc-pay">' + payLine(r.total, a) + '</p>' +
         '<p class="calc-note">' + (fr ? 'Hors taxe de séjour. Aucuns frais de service.' : 'Excluding tourist tax. No service fees.') + '</p>';
       if (r.nights < r.minNeeded) {
         html += '<p class="warn">' + (fr

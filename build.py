@@ -178,6 +178,7 @@ def rates_json(lang="fr"):
          "holidayFrom": C.HOLIDAYS[0], "holidayTo": C.HOLIDAYS[1],
          "cleaning": conv(C.CLEANING_FEE_EUR or 0),
          "weekly": [C.WEEKLY_MIN_NIGHTS, C.WEEKLY_DISCOUNT],
+         "depositPct": C.DEPOSIT_PCT, "balanceDays": C.BALANCE_DAYS,
          "labels": {"low": s["Low season"][0 if lang == "en" else 1],
                     "high": s["High season"][0 if lang == "en" else 1],
                     "holiday": s["Holidays"][0 if lang == "en" else 1]}}
@@ -349,12 +350,14 @@ def build_home(lang):
 """
     price = h["price_from"](C.money(lang, C.PRICE_FROM_EUR)) if C.PRICE_FROM_EUR else f"<strong>{e(h['price_on_req'])}</strong>"
     direct = "".join(f"<li>{e(x)}</li>" for x in h["direct"])
+    steps = "".join(f"<li><strong>{e(s)}</strong><span>{e(d)}</span></li>" for s, d in h["steps"](C.DEPOSIT_PCT, C.BALANCE_DAYS))
     thanks = PAGES["thanks"][i]
     smoobu = ""
     if C.SMOOBU_WIDGET_URL:
         smoobu = f'<iframe class="smoobu-frame" src="{e(C.SMOOBU_WIDGET_URL)}" title="{e(u["book"])}" loading="lazy"></iframe>'
     out += f"""<section id="book"><div class="wrap booking">
-<div><h2>{e(h['book_h'])}</h2><p>{e(h['book_p'])}</p><ul class="direct-list">{direct}</ul></div>
+<div><h2>{e(h['book_h'])}</h2><p>{e(h['book_p'])}</p><ul class="direct-list">{direct}</ul>
+<h3 class="steps-h">{e(h['steps_h'])}</h3><ol class="steps">{steps}</ol></div>
 <div class="panel">
 <p class="price-line">{price}</p>
 {rates_table(lang)}
