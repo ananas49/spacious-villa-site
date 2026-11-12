@@ -39,6 +39,11 @@ PHOTOS = [
 # Pages: key -> (EN path, FR path)
 PAGES = {
     "home":    ("index.html", "fr/index.html"),
+    "villa":   ("the-villa.html", "fr/la-villa.html"),
+    "photos":  ("photos.html", "fr/photos.html"),
+    "location": ("location.html", "fr/emplacement.html"),
+    "book":    ("rates-booking.html", "fr/tarifs-reservation.html"),
+    "faq":     ("faq.html", "fr/faq.html"),
     "pinel":   ("pinel-island.html", "fr/ilet-pinel.html"),
     "gc":      ("grand-case-restaurants.html", "fr/restaurants-grand-case.html"),
     "beaches": ("saint-martin-beaches.html", "fr/plages-saint-martin.html"),
@@ -49,7 +54,12 @@ PAGES = {
 
 UI = {
     "en": {
-        "nav": [("#villa", "The villa"), ("#photos", "Photos"), ("#location", "Location"), ("#faq", "FAQ")],
+        "nav": [("villa", "The villa"), ("photos", "Photos"), ("location", "Location"), ("book", "Rates"), ("faq", "FAQ")],
+        "menu": "Menu", "see_photos": "See all photos", "discover": "Discover the villa", "rates_h": "Rates",
+        "sim_q": "How many nights?", "sim_night": "Per night", "sim_total": lambda n: f"Total for {n} nights",
+        "sim_note": lambda pct, k: f"Totals include the cleaning fee. {pct}% off from {k} nights.",
+        "sim_min": lambda k: f"{k} nights min.", "fewer": "One night fewer", "more": "One night more",
+        "cta_h": "Ready to plan your stay?", "cta_p": "Check the price for your dates and send your request. We reply within 24 hours.",
         "nav_guides": "Island guides",
         "book": "Check availability", "book_short": "Check dates",
         "switch": "Français", "switch_label": "Version française",
@@ -63,7 +73,12 @@ UI = {
         "contact": "Contact",
     },
     "fr": {
-        "nav": [("#villa", "La villa"), ("#photos", "Photos"), ("#location", "Emplacement"), ("#faq", "FAQ")],
+        "nav": [("villa", "La villa"), ("photos", "Photos"), ("location", "Emplacement"), ("book", "Tarifs"), ("faq", "FAQ")],
+        "menu": "Menu", "see_photos": "Voir toutes les photos", "discover": "Découvrir la villa", "rates_h": "Tarifs",
+        "sim_q": "Combien de nuits ?", "sim_night": "Par nuit", "sim_total": lambda n: f"Total pour {n} nuits",
+        "sim_note": lambda pct, k: f"Les totaux incluent le ménage. −{pct} % dès {k} nuits.",
+        "sim_min": lambda k: f"{k} nuits min.", "fewer": "Une nuit de moins", "more": "Une nuit de plus",
+        "cta_h": "Prêt à préparer votre séjour ?", "cta_p": "Calculez le prix pour vos dates et envoyez votre demande. Réponse sous 24 heures.",
         "nav_guides": "Guides de l'île",
         "book": "Voir les disponibilités", "book_short": "Mes dates",
         "switch": "English", "switch_label": "English version",
@@ -450,3 +465,44 @@ GUIDES = {
         },
     },
 }
+
+
+def page_meta(lang, cfg):
+    """Titre, description et en-tête de chaque page (hors accueil et guides)."""
+    frm = cfg.money(lang, cfg.PRICE_FROM_EUR)
+    pct, k = int(cfg.WEEKLY_DISCOUNT * 100), cfg.WEEKLY_MIN_NIGHTS
+    if lang == "en":
+        return {
+            "villa": ("4-Bedroom Villa with Private Pool in Cul-de-Sac, Saint Martin | Spacious Villa",
+                      "Inside Spacious Villa: 4 bedrooms, 3.5 bathrooms, private pool, sea views, fenced garden and full amenities for up to 8 guests in Cul-de-Sac, French Saint Martin.",
+                      "The villa", "Four bedrooms, a private pool and room for eight, on the French side of Saint Martin."),
+            "photos": ("Photos of Spacious Villa | Pool Villa in Cul-de-Sac, Saint Martin",
+                       "See the private pool, sea-view terraces, living spaces and bedrooms of Spacious Villa in Cul-de-Sac, Saint Martin.",
+                       "Photos", "The pool, the terraces, the living spaces and the bedrooms. Tap a photo to see it full screen."),
+            "location": ("Location: Cul-de-Sac, Minutes from Pinel Island and Orient Bay | Spacious Villa",
+                         "Spacious Villa is in Cul-de-Sac, French Saint Martin: 3 minutes from the Pinel Island boat, 5 minutes from Orient Beach and Grand Case, 30 minutes from SXM airport.",
+                         "Location", "Close to everything, quiet at home."),
+            "book": ("Rates and Booking | Spacious Villa, Saint Martin (Book Direct)",
+                     f"Rates from {frm} per night, {pct}% off stays of {k} nights or more, no platform fees. Calculate the price of your stay and request your dates directly with the owners.",
+                     "Rates and booking", "Booking with us directly means a simpler stay and a better deal."),
+            "faq": ("FAQ: Check-in, Payment, Pets and Cancellation | Spacious Villa",
+                    "Answers about check-in times, rates, payment, deposit, pets, house rules and cancellation at Spacious Villa, Cul-de-Sac, Saint Martin.",
+                    "Good to know", "What guests ask us before booking."),
+        }
+    return {
+        "villa": ("Villa 4 chambres avec piscine privée à Cul-de-Sac, Saint-Martin | Spacious Villa",
+                  "Découvrez Spacious Villa : 4 chambres, 3,5 salles de bain, piscine privée, vue mer, jardin clos et tous les équipements pour 8 voyageurs à Cul-de-Sac, Saint-Martin.",
+                  "La villa", "Quatre chambres, une piscine privée et de la place pour huit, côté français de Saint-Martin."),
+        "photos": ("Photos de Spacious Villa | Villa avec piscine à Cul-de-Sac, Saint-Martin",
+                   "La piscine privée, les terrasses vue mer, les pièces de vie et les chambres de Spacious Villa à Cul-de-Sac, Saint-Martin.",
+                   "Photos", "La piscine, les terrasses, les pièces de vie et les chambres. Touchez une photo pour l'agrandir."),
+        "location": ("Emplacement : Cul-de-Sac, près de l'îlet Pinel et de la Baie Orientale | Spacious Villa",
+                     "Spacious Villa se trouve à Cul-de-Sac, Saint-Martin côté français : à 3 minutes du bateau pour l'îlet Pinel, 5 minutes de la Baie Orientale et de Grand Case, 30 minutes de l'aéroport SXM.",
+                     "Emplacement", "Proche de tout, au calme chez vous."),
+        "book": ("Tarifs et réservation | Spacious Villa, Saint-Martin (réservation directe)",
+                 f"À partir de {frm} la nuit, −{pct} % dès {k} nuits, sans frais de plateforme. Calculez le prix de votre séjour et demandez vos dates directement aux propriétaires.",
+                 "Tarifs et réservation", "Réserver directement avec nous, c'est un séjour plus simple et un meilleur prix."),
+        "faq": ("FAQ : arrivée, paiement, animaux et annulation | Spacious Villa",
+                "Les réponses sur les horaires d'arrivée, les tarifs, le paiement, la caution, les animaux, le règlement et l'annulation à Spacious Villa, Cul-de-Sac, Saint-Martin.",
+                "Bon à savoir", "Ce que nos voyageurs nous demandent avant de réserver."),
+    }

@@ -16,7 +16,7 @@
     });
   });
 
-  // Quick booking card fills the full enquiry form
+  // Quick booking card: fills the enquiry form on the same page, or carries the dates to the booking page
   var quick = document.getElementById('quick-book');
   var main = document.getElementById('enquiry');
   if (quick && main) {
@@ -27,9 +27,39 @@
         if (s && t && s.value) { t.value = s.value; t.dispatchEvent(new Event('change')); }
       });
       document.getElementById('book').scrollIntoView();
-      var first = document.getElementById('name'); if (first) first.focus({ preventScroll: true });
     });
   }
+  if (main) {
+    var params = new URLSearchParams(location.search), filled = false;
+    ['checkin', 'checkout', 'guests'].forEach(function (r) {
+      var v = params.get(r), t = q(main, r);
+      if (v && t && /^[0-9-]{1,10}$/.test(v)) { t.value = v; filled = true; }
+    });
+    if (filled) { setTimeout(function () { main.dispatchEvent(new Event('change')); main.scrollIntoView(); }, 0); }
+  }
+
+  // Night simulator: total per season for N nights
+  document.querySelectorAll('[data-sim]').forEach(function (box) {
+    var R = JSON.parse(box.dataset.rates), fr = box.dataset.lang === 'fr';
+    var n = parseInt(box.dataset.nights, 10) || 5, MIN = 1, MAX = 30;
+    var fmt = function (v) { return fr ? v.toLocaleString('fr-FR') + ' €' : '$' + v.toLocaleString('en-US'); };
+    var out = box.querySelector('.sim-n'), head = box.querySelector('.sim-head');
+    var minus = box.querySelector('.sim-minus'), plus = box.querySelector('.sim-plus');
+    var render = function () {
+      out.textContent = n;
+      head.textContent = fr ? 'Total pour ' + n + (n > 1 ? ' nuits' : ' nuit') : 'Total for ' + n + (n > 1 ? ' nights' : ' night');
+      box.querySelectorAll('.sim-total').forEach(function (td) {
+        var s = R[td.dataset.season];
+        if (n < s[1]) { td.innerHTML = '<span class="sim-min">' + (fr ? s[1] + ' nuits min.' : s[1] + ' nights min.') + '</span>'; return; }
+        var sub = s[0] * n, disc = (R.weekly && n >= R.weekly[0]) ? Math.round(sub * R.weekly[1]) : 0;
+        td.textContent = fmt(sub - disc + R.cleaning);
+      });
+      minus.disabled = n <= MIN; plus.disabled = n >= MAX;
+    };
+    minus.addEventListener('click', function () { if (n > MIN) { n--; render(); } });
+    plus.addEventListener('click', function () { if (n < MAX) { n++; render(); } });
+    render();
+  });
 
   // Price calculator (itemized, like a booking site) + clear email subject for the owner
   function calc(R, a, b) {

@@ -5,7 +5,7 @@
 """
 import html, json, os, posixpath, shutil, sys, math
 import config as C
-from content import PHOTOS, PAGES, UI, HOME, GUIDES, faq
+from content import PHOTOS, PAGES, UI, HOME, GUIDES, faq, page_meta
 
 MODE = "preview" if "preview" in sys.argv[1:] else "prod"
 OUT = os.path.join(os.path.dirname(__file__), "preview" if MODE == "preview" else "dist")
@@ -104,16 +104,20 @@ def head(lang, key, title, desc, path, image_i=0, jsonld=None, noindex=False):
 
 def header(lang, key, path):
     u = UI[lang]
-    home = PAGES["home"][LANG_IDX[lang]]
+    i = LANG_IDX[lang]
+    home = PAGES["home"][i]
     other = "fr" if lang == "en" else "en"
     other_path = PAGES[key][LANG_IDX[other]]
-    nav = "".join(f'<a href="{link(path, home, a)}">{e(t)}</a>' for a, t in u["nav"])
+    links = "".join(
+        f'<a href="{link(path, PAGES[k][i])}"{" aria-current=\"page\"" if k == key else ""}>{e(t)}</a>' for k, t in u["nav"])
     return f"""<a class="skip" href="#main">{u['skip']}</a>
 <header class="site-header"><div class="wrap">
 <a class="brand" href="{link(path, home)}"><span class="brand-mark" aria-hidden="true"></span>{e(C.SITE_NAME)}</a>
-<nav class="nav" aria-label="Main">{nav}<a href="{link(path, home, '#guides')}">{e(u['nav_guides'])}</a></nav>
+<nav class="nav" aria-label="Main">{links}</nav>
 <a class="lang" href="{link(path, other_path)}" hreflang="{other}" lang="{other}" aria-label="{e(u['switch_label'])}">{u['switch']}</a>
-<a class="btn header-cta" href="{link(path, home, '#book')}">{e(u['book'])}</a>
+<a class="btn header-cta" href="{link(path, PAGES['book'][i])}">{e(u['book'])}</a>
+<details class="menu"><summary aria-label="{e(u['menu'])}"><span></span><span></span><span></span></summary>
+<nav aria-label="{e(u['menu'])}">{links}</nav></details>
 </div></header>
 """
 
@@ -132,14 +136,15 @@ def footer(lang, path):
         contact.append(f'<li><a href="{e(C.INSTAGRAM)}">Instagram</a></li>')
     contact_html = f"<h2>{u['contact']}</h2><ul>{''.join(contact)}</ul>" if contact else ""
     mobile = ""
-    if PAGES["thanks"][i] != path:
-        mobile = f"""<div class="mobile-bar"><span><strong>{e(C.SITE_NAME)}</strong>{e(u['mobile_from'])}</span><a class="btn" href="{link(path, home, '#book')}">{e(u['book_short'])}</a></div>"""
+    if path not in (PAGES["thanks"][i], PAGES["book"][i]):
+        mobile = f"""<div class="mobile-bar"><span><strong>{e(C.SITE_NAME)}</strong>{e(u['mobile_from'])}</span><a class="btn" href="{link(path, PAGES['book'][i])}">{e(u['book_short'])}</a></div>"""
     return f"""<footer class="site-footer"><div class="wrap">
 <div class="footer-grid">
 <div><h2>{e(C.SITE_NAME)}</h2><p>{e(u['footer_about'])}</p>{contact_html}</div>
 <div><h2>{u['footer_guides']}</h2><ul>{guides}</ul></div>
 <div><h2>{u['footer_info']}</h2><ul>
-<li><a href="{link(path, home, '#faq')}">FAQ</a></li>
+<li><a href="{link(path, PAGES['book'][i])}">{e(u['nav'][3][1])}</a></li>
+<li><a href="{link(path, PAGES['faq'][i])}">FAQ</a></li>
 <li><a href="{link(path, PAGES['legal'][i])}">{u['legal']}</a></li>
 <li><a href="{link(path, PAGES['privacy'][i])}">{u['privacy']}</a></li>
 </ul></div>
@@ -236,84 +241,113 @@ def whatsapp_block(lang):
             f'{label}</a></div>')
 
 
-def rates_table(lang):
+def sim_cell(lang, s, n):
+    """Total pour n nuits dans la saison s (tuple SEASONS), ménage compris."""
+    conv = C.usd if lang == "en" else (lambda x: x)
+    if n < s[5]:
+        return f'<span class="sim-min">{e(UI[lang]["sim_min"](s[5]))}</span>'
+    sub = conv(s[4]) * n
+    disc = int(sub * C.WEEKLY_DISCOUNT + 0.5) if n >= C.WEEKLY_MIN_NIGHTS else 0
+    total = sub - disc + conv(C.CLEANING_FEE_EUR or 0)
+    return (f"${total:,}" if lang == "en" else f"{total:,} €".replace(",", " "))
+
+
+def rates_table(lang, nights=5):
+    """Tarifs par saison + simulateur : total pour N nuits, modifiable avec − et +."""
     if not getattr(C, "SEASONS", None):
         return ""
     en = lang == "en"
+    u = UI[lang]
+    keys = {"Low season": "low", "High season": "high", "Holidays": "holiday"}
     rows = ""
     for s in C.SEASONS:
         name, period = (s[0], s[2]) if en else (s[1], s[3])
-        price = C.money(lang, s[4])
-        nights = f"{s[5]} nights min." if en else f"{s[5]} nuits min."
-        rows += f"<tr><th scope='row'>{e(name)}<span>{e(period)}</span></th><td>{price}</td><td>{nights}</td></tr>"
+        rows += (f"<tr><th scope='row'>{e(name)}<span>{e(period)}</span></th><td>{C.money(lang, s[4])}</td>"
+                 f"<td class='sim-total' data-season='{keys[s[0]]}'>{sim_cell(lang, s, nights)}</td></tr>")
     extra = []
-    if getattr(C, "WEEKLY_DISCOUNT", 0):
-        pct = int(C.WEEKLY_DISCOUNT * 100)
-        extra.append((f"{pct}% off stays of {C.WEEKLY_MIN_NIGHTS} nights or more" if en else f"−{pct} % dès {C.WEEKLY_MIN_NIGHTS} nuits"))
-    if C.CLEANING_FEE_EUR:
-        extra.append((f"Cleaning fee {C.money(lang, C.CLEANING_FEE_EUR)} per stay" if en else f"Ménage {C.money(lang, C.CLEANING_FEE_EUR)} par séjour"))
     if C.DEPOSIT_EUR:
         extra.append((f"Deposit {C.money(lang, C.DEPOSIT_EUR)} (card hold, not charged)" if en else f"Caution {C.money(lang, C.DEPOSIT_EUR)} (empreinte bancaire, non débitée)"))
-    cap = "Rates per night for the whole villa" if en else "Tarifs par nuit pour toute la villa"
-    note = f"<p class='rates-note'>{e(' · '.join(extra))}</p>" if extra else ""
-    return f"<table class='rates'><caption>{cap}</caption><tbody>{rows}</tbody></table>{note}"
+    note = u["sim_note"](int(C.WEEKLY_DISCOUNT * 100), C.WEEKLY_MIN_NIGHTS) + (" " + extra[0] + "." if extra else "")
+    return f"""<div class="sim" data-sim data-lang="{lang}" data-rates="{e(rates_json(lang))}" data-nights="{nights}">
+<div class="sim-ctl"><span class="sim-q">{e(u['sim_q'])}</span>
+<span class="stepper"><button type="button" class="sim-minus" aria-label="{e(u['fewer'])}">−</button><output class="sim-n" aria-live="polite">{nights}</output><button type="button" class="sim-plus" aria-label="{e(u['more'])}">+</button></span></div>
+<table class="rates"><thead><tr><th scope="col"><span class="vh">{'Season' if en else 'Saison'}</span></th><th scope="col">{e(u['sim_night'])}</th><th scope="col" class="sim-head">{e(u['sim_total'](nights))}</th></tr></thead>
+<tbody>{rows}</tbody></table>
+<p class="rates-note">{e(note)}</p></div>"""
 
 
-def build_home(lang):
-    i = LANG_IDX[lang]
-    path = PAGES["home"][i]
-    h, u = HOME[lang], UI[lang]
-    qa = faq(lang, C)
-    ld = [
-        strip_none(jsonld_rental(lang)),
-        {"@context": "https://schema.org", "@type": "WebSite", "name": C.SITE_NAME, "url": url(path), "inLanguage": lang},
-        {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
-            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in qa]},
-    ]
-    out = head(lang, "home", h["title"], h["desc"], path, 0, ld)
-    out += header(lang, "home", path)
-    facts = "".join(f"<li><strong>{n}</strong>{e(t)}</li>" for n, t in h["facts"])
-    out += f"""<main id="main">
-<section class="hero" aria-labelledby="hero-title">
-<img src="{img_src(0)}" alt="{e(PHOTOS[0][3 + i])}" width="{PHOTOS[0][2][0]}" height="{PHOTOS[0][2][1]}" fetchpriority="high">
-<div class="wrap hero-inner">
-<div>
-<h1 id="hero-title">{e(h['h1'])}</h1>
-<p class="hero-lede">{e(h['lede'])}</p>
-<ul class="facts">{facts}</ul>
+def page_head(lang, path, h1, lede):
+    u = UI[lang]
+    home = PAGES["home"][LANG_IDX[lang]]
+    return f"""<div class="wrap page-head">
+<p class="crumbs"><a href="{link(path, home)}">{e(u['home'])}</a> / {e(h1)}</p>
+<h1>{e(h1)}</h1><p class="page-lede">{e(lede)}</p>
 </div>
-<form class="quick-book" id="quick-book" action="#book" data-lang="{lang}" data-rates="{e(rates_json(lang))}">
-<h2>{e(h['quick_h'])}</h2>
-<p>{e(h['quick_p'])}</p>
-{date_fields(lang, 'q-')}
-<div class="estimate" data-estimate aria-live="polite"></div>
-<button class="btn" type="submit" style="width:100%">{e(u['book'])}</button>
-</form>
-</div>
-</section>
 """
+
+
+def cta(lang, path):
+    u = UI[lang]
+    book = PAGES["book"][LANG_IDX[lang]]
+    wa = ""
+    if C.WHATSAPP:
+        wa = f'<a class="btn btn-ghost" href="{e(C.whatsapp_link())}" rel="noopener">WhatsApp</a>'
+    return f"""<section class="cta"><div class="wrap cta-in">
+<div><h2>{e(u['cta_h'])}</h2><p>{e(u['cta_p'])}</p></div>
+<div class="cta-btns"><a class="btn" href="{link(path, book)}">{e(u['book'])}</a>{wa}</div>
+</div></section>
+"""
+
+
+def sec_intro(lang, path, full):
+    i = LANG_IDX[lang]
+    h, u = HOME[lang], UI[lang]
     spec = "".join(f"<div><dt>{e(a)}</dt><dd>{e(b)}</dd></div>" for a, b in h["spec"])
     if C.MIN_NIGHTS:
         spec += f"<div><dt>{'Minimum stay' if lang == 'en' else 'Séjour minimum'}</dt><dd>{'From' if lang == 'en' else 'Dès'} {C.MIN_NIGHTS} {'nights' if lang == 'en' else 'nuits'}</dd></div>"
     if C.CHECKIN_TIME and C.CHECKOUT_TIME:
         spec += f"<div><dt>{'Check-in / out' if lang == 'en' else 'Arrivée / départ'}</dt><dd>{C.CHECKIN_TIME} / {C.CHECKOUT_TIME}</dd></div>"
-    body = "".join(f"<p>{e(p)}</p>" for p in h["intro_body"])
-    out += f"""<section id="villa"><div class="wrap intro">
+    paras = h["intro_body"] if full else h["intro_body"][:1]
+    body = "".join(f"<p>{e(p)}</p>" for p in paras)
+    if full:
+        btn = f'<a class="btn" href="{link(path, PAGES["book"][i])}">{e(u["book"])}</a>'
+    else:
+        btn = f'<a class="btn btn-ghost" href="{link(path, PAGES["villa"][i])}">{e(u["discover"])}</a>'
+    return f"""<section id="villa"><div class="wrap intro">
 <div><h2>{e(h['intro_h'])}</h2><p class="lead">{e(h['intro_lead'])}</p>{body}
-<p><a class="btn" href="#book">{e(u['book'])}</a></p></div>
+<p>{btn}</p></div>
 <dl class="spec">{spec}</dl>
 </div></section>
 """
-    out += f"""<section class="mural" aria-labelledby="mural-title">
+
+
+def sec_mural(lang):
+    i = LANG_IDX[lang]
+    h = HOME[lang]
+    return f"""<section class="mural" aria-labelledby="mural-title">
 <img src="{img_src(1)}" alt="{e(PHOTOS[1][3 + i])}" width="{PHOTOS[1][2][0]}" height="{PHOTOS[1][2][1]}" loading="lazy">
 <div class="wrap mural-cap"><h2 id="mural-title">{e(h['mural_h'])}</h2><p>{e(h['mural_p'])}</p></div>
 </section>
 """
+
+
+def sec_gallery(lang, path, teaser=False):
+    i = LANG_IDX[lang]
+    h, u = HOME[lang], UI[lang]
+    photos_page = PAGES["photos"][i]
+    if teaser:
+        tiles = ""
+        for n in (0, 2, 3, 4, 5):
+            tiles += f'<a href="{link(path, photos_page)}" class="g{n}"><img src="{img_src(n)}" alt="{e(PHOTOS[n][3 + i])}" loading="lazy" width="{PHOTOS[n][2][0]}" height="{PHOTOS[n][2][1]}"></a>'
+        return f"""<section id="photos"><div class="wrap">
+<div class="section-head"><h2>{e(h['photos_h'])}</h2><a class="more" href="{link(path, photos_page)}">{e(u['see_photos'])} ({len(PHOTOS)})</a></div>
+<div class="gallery gallery-teaser">{tiles}</div>
+</div></section>
+"""
     gal = ""
     for n in range(len(PHOTOS)):
         gal += f'<button type="button" class="g{n}"><img src="{img_src(n)}" alt="{e(PHOTOS[n][3 + i])}" loading="lazy" width="{PHOTOS[n][2][0]}" height="{PHOTOS[n][2][1]}"></button>'
-    out += f"""<section id="photos"><div class="wrap">
-<div class="section-head"><h2>{e(h['photos_h'])}</h2><p>{e(h['photos_p'])}</p></div>
+    return f"""<section id="photos" class="tight"><div class="wrap">
 <div class="gallery">{gal}</div>
 </div></section>
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photos">
@@ -323,50 +357,82 @@ def build_home(lang):
 <button class="lb-btn lb-next" type="button" aria-label="{'Next photo' if lang == 'en' else 'Photo suivante'}">›</button>
 </div>
 """
+
+
+def sec_highlights(lang):
+    h = HOME[lang]
     hl = "".join(f"<div><h3>{e(t)}</h3><p>{e(d)}</p></div>" for t, d in h["highlights"])
-    out += f"""<section class="band"><div class="wrap"><h2>{e(h['hl_h'])}</h2><div class="highlights">{hl}</div></div></section>
+    return f"""<section class="band"><div class="wrap"><h2>{e(h['hl_h'])}</h2><div class="highlights">{hl}</div></div></section>
 """
+
+
+def sec_amenities(lang):
+    h = HOME[lang]
     am = "".join(f"<div><h3>{e(t)}</h3><ul>{''.join(f'<li>{e(x)}</li>' for x in items)}</ul></div>" for t, items in h["amenities"])
-    out += f"""<section id="amenities"><div class="wrap"><h2>{e(h['am_h'])}</h2><div class="amenities">{am}</div></div></section>
+    return f"""<section id="amenities" class="tight"><div class="wrap"><h2>{e(h['am_h'])}</h2><div class="amenities">{am}</div></div></section>
 """
-    # Distance line, positions on a square-root scale of minutes
+
+
+def sec_location(lang, with_title=True):
+    h = HOME[lang]
     stops = f'<div class="stop" style="left:0"><span class="dot"></span><span class="t">{e(h["route_from"])}</span><span class="n">Cul-de-Sac</span></div>'
     n_stops = len(h["route"])
     for idx, (mins, t, name, how) in enumerate(h["route"], start=1):
         pos = idx / n_stops * 100  # ordered by travel time, evenly spaced
         above = f'<span class="above">{e(how)}</span>' if how else ""
         stops += f'<div class="stop" style="left:{pos:.1f}%">{above}<span class="dot"></span><span class="t">{e(t)}</span><span class="n">{e(name)}</span></div>'
-    out += f"""<section id="location" class="location"><div class="wrap">
-<h2>{e(h['loc_h'])}</h2><p>{e(h['loc_p'])}</p>
+    title = f"<h2>{e(h['loc_h'])}</h2>" if with_title else ""
+    return f"""<section id="location" class="location"><div class="wrap">
+{title}<p>{e(h['loc_p'])}</p>
 <div class="route" role="list">{stops}</div>
 </div></section>
 """
-    if C.RATING:
-        sh = ""
-        out += f"""<section id="reviews"><div class="wrap reviews">
+
+
+def sec_reviews(lang):
+    h = HOME[lang]
+    if not C.RATING:
+        return ""
+    return f"""<section id="reviews"><div class="wrap reviews">
 <p class="score">{C.RATING}<small>{e(h['rev_sub'](C.RATING, C.REVIEW_COUNT))}</small></p>
 <div><h2>{e(h['rev_h'])}</h2><p>{e(h['rev_p'])}</p></div>
 </div></section>
 """
-    price = h["price_from"](C.money(lang, C.PRICE_FROM_EUR)) if C.PRICE_FROM_EUR else f"<strong>{e(h['price_on_req'])}</strong>"
+
+
+def sec_rates(lang, path):
+    """Bloc tarifs + simulateur pour l'accueil."""
+    i = LANG_IDX[lang]
+    h, u = HOME[lang], UI[lang]
+    direct = "".join(f"<li>{e(x)}</li>" for x in h["direct"])
+    return f"""<section id="rates"><div class="wrap booking">
+<div><h2>{e(u['rates_h'])}</h2><p>{e(h['book_p'])}</p><ul class="direct-list">{direct}</ul></div>
+<div class="panel">{rates_table(lang)}
+<a class="btn" style="width:100%" href="{link(path, PAGES['book'][i])}">{e(u['book'])}</a></div>
+</div></section>
+"""
+
+
+def sec_booking(lang, path):
+    i = LANG_IDX[lang]
+    h, u = HOME[lang], UI[lang]
     direct = "".join(f"<li>{e(x)}</li>" for x in h["direct"])
     steps = "".join(f"<li><strong>{e(s)}</strong><span>{e(d)}</span></li>" for s, d in h["steps"](C.DEPOSIT_PCT, C.BALANCE_DAYS))
     thanks = PAGES["thanks"][i]
     smoobu = ""
     if C.SMOOBU_WIDGET_URL:
         smoobu = f'<iframe class="smoobu-frame" src="{e(C.SMOOBU_WIDGET_URL)}" title="{e(u["book"])}" loading="lazy"></iframe>'
-    out += f"""<section id="book"><div class="wrap booking">
-<div><h2>{e(h['book_h'])}</h2><p>{e(h['book_p'])}</p><ul class="direct-list">{direct}</ul>
-<h3 class="steps-h">{e(h['steps_h'])}</h3><ol class="steps">{steps}</ol></div>
+    return f"""<section id="book" class="tight"><div class="wrap booking">
+<div><ul class="direct-list" style="margin-top:0">{direct}</ul>
+<h2 class="steps-h">{e(h['steps_h'])}</h2><ol class="steps">{steps}</ol></div>
 <div class="panel">
-<p class="price-line">{price}</p>
 {rates_table(lang)}
 {smoobu}
 <form id="enquiry" name="enquiry" method="POST" action="{link(path, thanks)}" data-netlify="true" netlify-honeypot="bot-field" data-lang="{lang}" data-rates="{e(rates_json(lang))}">
 <input type="hidden" name="form-name" value="enquiry">
 <input type="hidden" name="subject" value="Nouvelle demande de réservation">
 <p class="hp"><label>Leave empty <input name="bot-field"></label></p>
-<h3>{e(h['form_h'])}</h3>
+<h2 class="form-h">{e(h['form_h'])}</h2>
 {date_fields(lang, names=("Arrivée", "Départ", "Voyageurs"))}
 <div class="estimate" id="estimate" data-estimate aria-live="polite"></div>
 <input type="hidden" name="Nuits" value="">
@@ -386,19 +452,99 @@ def build_home(lang):
 </div>
 </div></section>
 """
+
+
+def sec_faq(lang, qa):
     det = "".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in qa)
-    out += f"""<section id="faq" style="padding-top:0"><div class="wrap faq-wrap"><h2>{e(h['faq_h'])}</h2><div class="faq">{det}</div></div></section>
+    return f"""<section id="faq" class="tight"><div class="wrap"><div class="faq faq-page">{det}</div></div></section>
 """
+
+
+def sec_guides(lang, path):
+    i = LANG_IDX[lang]
+    h = HOME[lang]
     cards = ""
     for k, g in GUIDES.items():
         gp = PAGES[k][i]
         cards += f'<a class="guide-link" href="{link(path, gp)}"><img src="{img_src(g["img"])}" alt="" loading="lazy" width="800" height="600"><h3>{e(g[lang]["h1"])}</h3><p>{e(g[lang]["card"])}</p></a>'
-    out += f"""<section id="guides" class="location"><div class="wrap">
+    return f"""<section id="guides"><div class="wrap">
 <div class="section-head"><h2>{e(h['guides_h'])}</h2><p>{e(h['guides_p'])}</p></div>
 <div class="guides">{cards}</div>
 </div></section>
-</main>
 """
+
+
+def build_home(lang):
+    i = LANG_IDX[lang]
+    path = PAGES["home"][i]
+    h, u = HOME[lang], UI[lang]
+    book = PAGES["book"][i]
+    ld = [
+        strip_none(jsonld_rental(lang)),
+        {"@context": "https://schema.org", "@type": "WebSite", "name": C.SITE_NAME, "url": url(path), "inLanguage": lang},
+    ]
+    out = head(lang, "home", h["title"], h["desc"], path, 0, ld)
+    out += header(lang, "home", path)
+    facts = "".join(f"<li><strong>{n}</strong>{e(t)}</li>" for n, t in h["facts"])
+    out += f"""<main id="main">
+<section class="hero" aria-labelledby="hero-title">
+<img src="{img_src(0)}" alt="{e(PHOTOS[0][3 + i])}" width="{PHOTOS[0][2][0]}" height="{PHOTOS[0][2][1]}" fetchpriority="high">
+<div class="wrap hero-inner">
+<div>
+<h1 id="hero-title">{e(h['h1'])}</h1>
+<p class="hero-lede">{e(h['lede'])}</p>
+<ul class="facts">{facts}</ul>
+</div>
+<form class="quick-book" id="quick-book" method="GET" action="{link(path, book)}" data-lang="{lang}" data-rates="{e(rates_json(lang))}">
+<h2>{e(h['quick_h'])}</h2>
+<p>{e(h['quick_p'])}</p>
+{date_fields(lang, 'q-')}
+<div class="estimate" data-estimate aria-live="polite"></div>
+<button class="btn" type="submit" style="width:100%">{e(u['book'])}</button>
+</form>
+</div>
+</section>
+"""
+    out += sec_intro(lang, path, full=False)
+    out += sec_mural(lang)
+    out += sec_gallery(lang, path, teaser=True)
+    out += sec_highlights(lang)
+    out += sec_rates(lang, path)
+    out += sec_reviews(lang)
+    out += sec_guides(lang, path).replace('<section id="guides">', '<section id="guides" class="location">')
+    out += "</main>\n"
+    out += footer(lang, path)
+    return path, out
+
+
+def build_page(lang, key):
+    """Pages intérieures : villa, photos, emplacement, tarifs et réservation, FAQ."""
+    i = LANG_IDX[lang]
+    path = PAGES[key][i]
+    u = UI[lang]
+    title, desc, h1, lede = page_meta(lang, C)[key]
+    home = PAGES["home"][i]
+    ld = [{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": u["home"], "item": url(home)},
+        {"@type": "ListItem", "position": 2, "name": h1, "item": url(path)}]}]
+    img = {"villa": 0, "photos": 0, "location": 3, "book": 1, "faq": 0}[key]
+    body = ""
+    if key == "villa":
+        body = sec_intro(lang, path, full=True).replace('<section id="villa">', '<section id="villa" class="tight">') + sec_highlights(lang) + sec_amenities(lang).replace('class="tight"', '') + cta(lang, path)
+    elif key == "photos":
+        body = sec_gallery(lang, path) + cta(lang, path)
+    elif key == "location":
+        body = sec_location(lang, with_title=False).replace('class="location"', 'class="location tight-top"') + sec_guides(lang, path) + cta(lang, path)
+    elif key == "book":
+        body = sec_booking(lang, path)
+    elif key == "faq":
+        qa = faq(lang, C)
+        ld.append({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in qa]})
+        body = sec_faq(lang, qa) + cta(lang, path)
+    out = head(lang, key, title, desc, path, img, ld)
+    out += header(lang, key, path)
+    out += f'<main id="main">\n{page_head(lang, path, h1, lede)}{body}</main>\n'
     out += footer(lang, path)
     return path, out
 
@@ -432,7 +578,7 @@ def build_guide(lang, key):
 </div>
 <img class="article-cover" src="{img_src(g['img'])}" alt="{e(PHOTOS[g['img']][3 + i])}" width="1600" height="800" fetchpriority="high">
 <article class="prose">{body}
-<div class="panel" style="margin-top:40px"><h2 style="margin-top:0">{e(cta_h)}</h2><p>{e(cta_p)}</p><a class="btn" href="{link(path, home, '#book')}">{e(u['book'])}</a></div>
+<div class="panel" style="margin-top:40px"><h2 style="margin-top:0">{e(cta_h)}</h2><p>{e(cta_p)}</p><a class="btn" href="{link(path, PAGES['book'][i])}">{e(u['book'])}</a></div>
 </article>
 </div></main>
 """
@@ -510,11 +656,15 @@ def main():
     pages = []
     for lang in ("en", "fr"):
         pages.append(build_home(lang))
+        for k in ("villa", "photos", "location", "book", "faq"):
+            pages.append(build_page(lang, k))
         for k in GUIDES:
             pages.append(build_guide(lang, k))
         for k in ("legal", "privacy", "thanks"):
             pages.append(build_simple(lang, k))
     for path, content in pages:
+        if MODE == "preview" and "/" in path:  # aperçu : chemins d'images relatifs depuis /fr/
+            content = content.replace('"img/', '"../img/')
         with open(os.path.join(OUT, path), "w", encoding="utf-8") as f:
             f.write(content)
     src = os.path.join(os.path.dirname(__file__), "static")
