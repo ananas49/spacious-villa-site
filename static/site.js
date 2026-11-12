@@ -31,57 +31,77 @@
     });
   }
 
-  // Price estimate + clear email subject for the owner
-  if (main && main.dataset.rates) {
-    var R = JSON.parse(main.dataset.rates);
-    var fr = main.dataset.lang === 'fr';
-    var out = document.getElementById('estimate');
-    var fmt = function (n) {
-      return fr ? n.toLocaleString('fr-FR') + ' €' : '€' + n.toLocaleString('en-US');
-    };
+  // Price calculator (itemized, like a booking site) + clear email subject for the owner
+  function calc(R, a, b) {
     var md = function (d) { return ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' + ('0' + d.getUTCDate()).slice(-2); };
     var season = function (d) {
-      var k = md(d), from = R.holidayFrom, to = R.holidayTo;
-      if (k >= from || k <= to) return 'holiday';
+      var k = md(d);
+      if (k >= R.holidayFrom || k <= R.holidayTo) return 'holiday';
       var m = d.getUTCMonth() + 1;
       return (m === 12 || m <= 4) ? 'high' : 'low';
     };
+    var d = new Date(a + 'T00:00:00Z'), end = new Date(b + 'T00:00:00Z');
+    var groups = {}, order = [], nights = 0, sub = 0, minNeeded = 0;
+    while (d < end) {
+      var s = season(d);
+      if (!groups[s]) { groups[s] = 0; order.push(s); }
+      groups[s]++; nights++; sub += R[s][0]; minNeeded = Math.max(minNeeded, R[s][1]);
+      d.setUTCDate(d.getUTCDate() + 1);
+    }
+    return { groups: groups, order: order, nights: nights, sub: sub, total: sub + R.cleaning, minNeeded: minNeeded };
+  }
+
+  document.querySelectorAll('form[data-rates]').forEach(function (form) {
+    if (!form.dataset.rates) return;
+    var R = JSON.parse(form.dataset.rates);
+    var fr = form.dataset.lang === 'fr';
+    var box = form.querySelector('[data-estimate]');
+    var isMain = form.id === 'enquiry';
+    var fmt = function (n) { return fr ? n.toLocaleString('fr-FR') + ' €' : '$' + n.toLocaleString('en-US'); };
     var shortDate = function (v) { var p = v.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; };
-    var setField = function (n, v) { var el = main.querySelector('[name="' + n + '"]'); if (el) el.value = v; };
+    var setField = function (n, v) { var el = form.querySelector('[name="' + n + '"]'); if (el) el.value = v; };
+    var nightWord = function (n) { return fr ? (n > 1 ? 'nuits' : 'nuit') : (n > 1 ? 'nights' : 'night'); };
 
     var update = function () {
-      var a = q(main, 'checkin').value, b = q(main, 'checkout').value, g = q(main, 'guests').value;
-      var name = (document.getElementById('name') || {}).value || '';
-      var subject = 'Demande villa';
-      if (a && b) subject += ' : ' + shortDate(a) + ' au ' + shortDate(b);
-      subject += ', ' + g + ' voyageur' + (g > 1 ? 's' : '');
-      if (name) subject += ', ' + name;
-      setField('subject', subject);
-
-      if (!a || !b || b <= a) { out.textContent = ''; setField('Nuits', ''); setField('Estimation', ''); return; }
-      var d = new Date(a + 'T00:00:00Z'), end = new Date(b + 'T00:00:00Z');
-      var nights = 0, total = 0, minNeeded = 0;
-      while (d < end) {
-        var s = season(d);
-        total += R[s][0]; minNeeded = Math.max(minNeeded, R[s][1]);
-        nights++; d.setUTCDate(d.getUTCDate() + 1);
+      var a = q(form, 'checkin').value, b = q(form, 'checkout').value, g = q(form, 'guests').value;
+      if (isMain) {
+        var name = (document.getElementById('name') || {}).value || '';
+        var subject = 'Demande villa';
+        if (a && b) subject += ' : ' + shortDate(a) + ' au ' + shortDate(b);
+        subject += ', ' + g + ' voyageur' + (g > 1 ? 's' : '');
+        if (name) subject += ', ' + name;
+        setField('subject', subject);
       }
-      var grand = total + R.cleaning;
-      var html = fr
-        ? 'Estimation pour ' + nights + ' nuit' + (nights > 1 ? 's' : '') + ' : <strong>' + fmt(grand) + '</strong> (dont ' + fmt(R.cleaning) + ' de ménage), hors taxe de séjour.'
-        : 'Estimate for ' + nights + ' night' + (nights > 1 ? 's' : '') + ': <strong>' + fmt(grand) + '</strong> (including ' + fmt(R.cleaning) + ' cleaning), excluding tourist tax.';
-      if (nights < minNeeded) {
-        html += '<span class="warn">' + (fr
-          ? 'Le séjour minimum pour ces dates est de ' + minNeeded + ' nuits.'
-          : 'The minimum stay for these dates is ' + minNeeded + ' nights.') + '</span>';
+      if (!a || !b || b <= a) {
+        box.innerHTML = '';
+        if (isMain) { setField('Nuits', ''); setField('Estimation', ''); }
+        return;
       }
-      out.innerHTML = html;
-      setField('Nuits', nights + (nights < minNeeded ? ' (minimum ' + minNeeded + ' pour ces dates)' : ''));
-      setField('Estimation', fmt(total) + ' + ' + fmt(R.cleaning) + ' ménage = ' + fmt(grand) + (fr ? '' : ' (USD)'));
+      var r = calc(R, a, b);
+      var rows = '';
+      r.order.forEach(function (s) {
+        var n = r.groups[s];
+        rows += '<tr><th scope="row">' + n + ' ' + nightWord(n) + ' × ' + fmt(R[s][0]) +
+          (r.order.length > 1 ? '<span>' + R.labels[s] + '</span>' : '') +
+          '</th><td>' + fmt(n * R[s][0]) + '</td></tr>';
+      });
+      rows += '<tr><th scope="row">' + (fr ? 'Ménage' : 'Cleaning fee') + '</th><td>' + fmt(R.cleaning) + '</td></tr>';
+      var html = '<table class="calc"><tbody>' + rows + '</tbody><tfoot><tr><th scope="row">Total</th><td>' + fmt(r.total) + '</td></tr></tfoot></table>' +
+        '<p class="calc-note">' + (fr ? 'Hors taxe de séjour. Aucuns frais de service.' : 'Excluding tourist tax. No service fees.') + '</p>';
+      if (r.nights < r.minNeeded) {
+        html += '<p class="warn">' + (fr
+          ? 'Le séjour minimum pour ces dates est de ' + r.minNeeded + ' nuits.'
+          : 'The minimum stay for these dates is ' + r.minNeeded + ' nights.') + '</p>';
+      }
+      box.innerHTML = html;
+      if (isMain) {
+        setField('Nuits', r.nights + (r.nights < r.minNeeded ? ' (minimum ' + r.minNeeded + ' pour ces dates)' : ''));
+        setField('Estimation', fmt(r.sub) + ' + ' + fmt(R.cleaning) + ' ménage = ' + fmt(r.total) + (fr ? '' : ' (USD)'));
+      }
     };
-    ['change', 'input'].forEach(function (ev) { main.addEventListener(ev, update); });
+    ['change', 'input'].forEach(function (ev) { form.addEventListener(ev, update); });
     update();
-  }
+  });
 
   // Gallery lightbox
   var lb = document.getElementById('lightbox');

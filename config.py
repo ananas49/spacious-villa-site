@@ -14,7 +14,7 @@ WHATSAPP = ""         # format international sans + ni espaces, ex. "59069000000
 INSTAGRAM = ""        # ex. "https://instagram.com/spaciousvillasxm"
 
 # Tarifs et conditions (None = « sur demande » / masqué)
-PRICE_FROM_EUR = 300
+PRICE_FROM_EUR = 430
 MIN_NIGHTS = 3
 CHECKIN_TIME = "15:00"
 CHECKOUT_TIME = "11:00"
@@ -43,9 +43,9 @@ PETS_ALLOWED = True
 
 # Saisons : (nom EN, nom FR, période EN, période FR, prix/nuit, nuits minimum)
 SEASONS = [
-    ("Low season", "Basse saison", "May to November", "Mai à novembre", 300, 3),
-    ("High season", "Haute saison", "December to April", "Décembre à avril", 400, 5),
-    ("Holidays", "Fêtes de fin d'année", "Christmas and New Year", "Noël et Nouvel An", 550, 7),
+    ("Low season", "Basse saison", "May to November", "Mai à novembre", 430, 3),
+    ("High season", "Haute saison", "December to April", "Décembre à avril", 500, 5),
+    ("Holidays", "Fêtes de fin d'année", "Christmas and New Year", "Noël et Nouvel An", 620, 7),
 ]
 
 # Période des fêtes (mois-jour) : nuits du 20 décembre au 2 janvier inclus

@@ -176,7 +176,10 @@ def rates_json(lang="fr"):
          "high": [conv(s["High season"][4]), s["High season"][5]],
          "holiday": [conv(s["Holidays"][4]), s["Holidays"][5]],
          "holidayFrom": C.HOLIDAYS[0], "holidayTo": C.HOLIDAYS[1],
-         "cleaning": conv(C.CLEANING_FEE_EUR or 0)}
+         "cleaning": conv(C.CLEANING_FEE_EUR or 0),
+         "labels": {"low": s["Low season"][0 if lang == "en" else 1],
+                    "high": s["High season"][0 if lang == "en" else 1],
+                    "holiday": s["Holidays"][0 if lang == "en" else 1]}}
     return json.dumps(d)
 
 
@@ -261,10 +264,11 @@ def build_home(lang):
 <p class="hero-lede">{e(h['lede'])}</p>
 <ul class="facts">{facts}</ul>
 </div>
-<form class="quick-book" id="quick-book" action="#book">
+<form class="quick-book" id="quick-book" action="#book" data-lang="{lang}" data-rates="{e(rates_json(lang))}">
 <h2>{e(h['quick_h'])}</h2>
 <p>{e(h['quick_p'])}</p>
 {date_fields(lang, 'q-')}
+<div class="estimate" data-estimate aria-live="polite"></div>
 <button class="btn" type="submit" style="width:100%">{e(u['book'])}</button>
 </form>
 </div>
@@ -338,13 +342,13 @@ def build_home(lang):
 <p class="price-line">{price}</p>
 {rates_table(lang)}
 {smoobu}
-<form id="enquiry" name="enquiry" method="POST" action="{link(path, thanks)}" data-netlify="true" netlify-honeypot="bot-field" data-lang="{lang}" data-rates='{rates_json(lang)}'>
+<form id="enquiry" name="enquiry" method="POST" action="{link(path, thanks)}" data-netlify="true" netlify-honeypot="bot-field" data-lang="{lang}" data-rates="{e(rates_json(lang))}">
 <input type="hidden" name="form-name" value="enquiry">
 <input type="hidden" name="subject" value="Nouvelle demande de réservation">
 <p class="hp"><label>Leave empty <input name="bot-field"></label></p>
 <h3>{e(h['form_h'])}</h3>
 {date_fields(lang, names=("Arrivée", "Départ", "Voyageurs"))}
-<p class="estimate" id="estimate" aria-live="polite"></p>
+<div class="estimate" id="estimate" data-estimate aria-live="polite"></div>
 <input type="hidden" name="Nuits" value="">
 <input type="hidden" name="Estimation" value="">
 <input type="hidden" name="Langue du client" value="{'Anglais' if lang == 'en' else 'Français'}">

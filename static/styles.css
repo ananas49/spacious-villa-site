@@ -246,10 +246,6 @@ dl.spec dd { margin: 0; font-family: var(--display); font-weight: 700; text-alig
 .rates td:nth-child(2) { font-weight: 800; font-size: 1.15rem; }
 .rates-note { font-size: .88rem; color: var(--ink-soft); margin: 6px 0 22px; }
 
-.estimate { font-family: var(--display); font-size: .95rem; margin: -2px 0 14px; min-height: 0; }
-.estimate:empty { display: none; }
-.estimate strong { font-size: 1.1rem; }
-.estimate .warn { color: var(--warn); display: block; margin-top: 4px; }
 
 /* Mural feature */
 .mural { padding: 0; position: relative; color: #fff; isolation: isolate; }
@@ -263,3 +259,14 @@ dl.spec dd { margin: 0; font-family: var(--display); font-weight: 700; text-alig
   .mural-cap { position: static; color: var(--ink); padding-top: 24px; padding-bottom: 8px; }
   .mural-cap h2 { color: var(--ink); }
 }
+
+/* Price calculator */
+.estimate { margin: 2px 0 16px; }
+.estimate:empty { display: none; }
+.calc { width: 100%; border-collapse: collapse; font-family: var(--display); font-variant-numeric: tabular-nums; font-size: .95rem; }
+.calc th, .calc td { padding: 7px 0; text-align: left; font-weight: 400; border-bottom: 1px solid var(--line); vertical-align: top; }
+.calc td { text-align: right; padding-left: 12px; white-space: nowrap; }
+.calc th span { display: block; font-size: .8rem; color: var(--ink-soft); }
+.calc tfoot th, .calc tfoot td { font-weight: 800; font-size: 1.15rem; border-bottom: 0; border-top: 2px solid var(--ink); padding-top: 10px; }
+.calc-note { font-size: .82rem; color: var(--ink-soft); margin: 4px 0 0; }
+.estimate .warn { color: var(--warn); font-family: var(--display); font-size: .9rem; margin: 6px 0 0; }
