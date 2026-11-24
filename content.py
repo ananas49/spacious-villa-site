@@ -47,6 +47,8 @@ PAGES = {
     "pinel":   ("pinel-island.html", "fr/ilet-pinel.html"),
     "gc":      ("grand-case-restaurants.html", "fr/restaurants-grand-case.html"),
     "beaches": ("saint-martin-beaches.html", "fr/plages-saint-martin.html"),
+    "season":  ("best-time-to-visit-saint-martin.html", "fr/quand-partir-saint-martin.html"),
+    "airport": ("sxm-airport-to-cul-de-sac.html", "fr/aeroport-sxm-cul-de-sac.html"),
     "legal":   ("legal-notice.html", "fr/mentions-legales.html"),
     "privacy": ("privacy.html", "fr/confidentialite.html"),
     "thanks":  ("thanks.html", "fr/merci.html"),
@@ -283,8 +285,9 @@ def faq(lang, cfg):
         out.append(("Is there a security deposit?" if en else "Y a-t-il une caution ?",
                     f"Yes, {cfg.money('en', cfg.DEPOSIT_EUR)}. It is a hold on your card, not a charge, and it is released after your stay if nothing is damaged." if en
                     else f"Oui, {cfg.money('fr', cfg.DEPOSIT_EUR)}. C'est une empreinte bancaire, pas un débit : elle est levée après le séjour si rien n'est endommagé."))
-    out.append(("Is the villa cleaned during my stay?" if en else "Le ménage est-il fait pendant le séjour ?",
-                "Yes, weekly housekeeping is included in the stay." if en else "Oui, un ménage hebdomadaire est inclus dans le séjour."))
+    out.append(("Is there a cleaning fee?" if en else "Y a-t-il des frais de ménage ?",
+                "No. Final cleaning is included in the nightly rate, and weekly housekeeping is included during your stay." if en
+                else "Non. Le ménage de fin de séjour est inclus dans le prix de la nuit, et un ménage hebdomadaire est assuré pendant le séjour."))
     if getattr(cfg, "PETS_ALLOWED", False):
         out.append(("Are pets allowed?" if en else "Les animaux sont-ils acceptés ?",
                     "Yes, pets are welcome. Please tell us about your pet when you send your request." if en
@@ -465,6 +468,134 @@ GUIDES = {
 <li>Une voiture de location est le plus simple pour découvrir les plages.</li>
 <li>La plupart des plages ne sont pas surveillées : vérifiez les conditions et surveillez les enfants.</li>
 <li>Utilisez une crème solaire sans danger pour les coraux et rapportez vos déchets.</li>
+</ul>""",
+        },
+    },
+    "season": {
+        "img": 4,
+        "en": {
+            "title": "Best Time to Visit Saint Martin: Weather, Seasons and Events by Month",
+            "desc": "When to go to Saint Martin: dry season from December to April, quieter months from May to November, hurricane season, sea temperature, Carnival and the island's main events. A local guide from our villa in Cul-de-Sac.",
+            "h1": "The best time to visit Saint Martin",
+            "card": "Weather, seasons and events, month by month.",
+            "body": """
+<p>Saint Martin is warm all year round, with air temperatures that usually stay between the mid-20s and low 30s °C (high 70s to high 80s °F) and sea water warm enough to swim in every month. What changes through the year is rainfall, wind, crowds and prices. Here is how the seasons work, so you can pick the trip that suits you.</p>
+<h2>December to April: the dry season</h2>
+<p>This is the classic Caribbean high season. Days are sunny, humidity is lower and the trade winds keep evenings pleasant. It is the most popular time to visit, especially around Christmas, New Year and the North American spring breaks, so the best villas and restaurants book up early.</p>
+<ul>
+<li><strong>Good for:</strong> guaranteed sunshine, beach days, boat trips to Pinel Island and Tintamarre.</li>
+<li><strong>Plan ahead:</strong> book your villa and flights several months in advance, and reserve your favourite restaurants in Grand Case a few days ahead.</li>
+</ul>
+<h2>May to July: the sweet spot</h2>
+<p>Early summer is often the best value. The weather is still mostly dry and sunny, the sea is calm and warm, the island is quieter and rates are lower. It is a great time for families and for longer stays.</p>
+<h2>August to November: the quiet season</h2>
+<p>The Atlantic hurricane season officially runs from 1 June to 30 November, with most activity usually between August and October. Many days are still sunny, with short tropical showers, but some restaurants and hotels close for a few weeks around September and October. If you travel in this period, choose flexible bookings and travel insurance, and keep an eye on the forecast.</p>
+<div class="callout"><p><strong>Our tip:</strong> for the best balance of sunshine, calm seas and lower prices, look at late April, May and June. You get the island at its most relaxed.</p></div>
+<h2>Events worth planning around</h2>
+<ul>
+<li><strong>Carnival:</strong> the French side celebrates in the weeks before Lent (usually February or early March), with parades in Marigot and Grand Case. The Dutch side holds its own Carnival later in spring.</li>
+<li><strong>Sailing regattas:</strong> the island hosts well-known regattas in late winter and spring, when the bays fill with sailing boats.</li>
+<li><strong>Tuesday nights in Grand Case:</strong> during the high season, the village hosts a weekly street party with music and food stalls. <a href="{gc}">See our Grand Case guide</a>.</li>
+</ul>
+<h2>Good to know whatever the season</h2>
+<ul>
+<li>The sun is strong all year: bring reef-safe sunscreen, a hat and water.</li>
+<li>Sargassum seaweed can reach east-facing beaches at some times of year. The west coast is often clear when the east is affected. <a href="{beaches}">See our beach guide</a>.</li>
+<li>Event dates change every year, so check them before you book.</li>
+</ul>""",
+        },
+        "fr": {
+            "title": "Quand partir à Saint-Martin : météo, saisons et événements mois par mois",
+            "desc": "Quand partir à Saint-Martin : saison sèche de décembre à avril, mois plus calmes de mai à novembre, saison cyclonique, température de l'eau, carnaval et grands événements. Notre guide local depuis la villa à Cul-de-Sac.",
+            "h1": "Quand partir à Saint-Martin",
+            "card": "Météo, saisons et événements, mois par mois.",
+            "body": """
+<p>Il fait chaud toute l'année à Saint-Martin : l'air se situe généralement entre 25 et 31 °C, et la mer est assez chaude pour se baigner en toute saison. Ce qui change au fil de l'année, ce sont la pluie, le vent, la fréquentation et les prix. Voici comment fonctionnent les saisons, pour choisir le séjour qui vous ressemble.</p>
+<h2>De décembre à avril : la saison sèche</h2>
+<p>C'est la haute saison classique des Caraïbes. Les journées sont ensoleillées, l'air est moins humide et les alizés rendent les soirées agréables. C'est la période la plus demandée, surtout autour de Noël, du Nouvel An et des vacances de printemps nord-américaines : les belles villas et les restaurants se réservent tôt.</p>
+<ul>
+<li><strong>Idéal pour :</strong> le soleil garanti, les journées plage, les sorties en bateau vers l'îlet Pinel et Tintamarre.</li>
+<li><strong>À anticiper :</strong> réservez villa et vols plusieurs mois à l'avance, et vos restaurants préférés à Grand Case quelques jours avant.</li>
+</ul>
+<h2>De mai à juillet : le bon compromis</h2>
+<p>Le début de l'été offre souvent le meilleur rapport qualité-prix. Le temps reste en grande partie sec et ensoleillé, la mer est calme et chaude, l'île est plus tranquille et les tarifs sont plus doux. Une très bonne période pour les familles et les longs séjours.</p>
+<h2>D'août à novembre : la saison calme</h2>
+<p>La saison cyclonique de l'Atlantique s'étend officiellement du 1er juin au 30 novembre, avec l'essentiel de l'activité en général entre août et octobre. Beaucoup de journées restent ensoleillées, avec de courtes averses tropicales, mais certains restaurants et hôtels ferment quelques semaines vers septembre et octobre. Si vous voyagez à cette période, privilégiez une réservation flexible et une assurance voyage, et surveillez la météo.</p>
+<div class="callout"><p><strong>Notre conseil :</strong> pour le meilleur équilibre entre soleil, mer calme et prix doux, regardez fin avril, mai et juin. Vous profitez de l'île dans sa version la plus détendue.</p></div>
+<h2>Les événements à prévoir</h2>
+<ul>
+<li><strong>Le carnaval :</strong> le côté français le fête dans les semaines qui précèdent le Carême (en général en février ou début mars), avec des défilés à Marigot et Grand Case. Le côté hollandais organise le sien plus tard au printemps.</li>
+<li><strong>Les régates :</strong> l'île accueille des régates réputées à la fin de l'hiver et au printemps, quand les baies se remplissent de voiliers.</li>
+<li><strong>Les mardis soir à Grand Case :</strong> en haute saison, le village organise chaque semaine une fête de rue avec musique et stands. <a href="{gc}">Voir notre guide de Grand Case</a>.</li>
+</ul>
+<h2>Bon à savoir, quelle que soit la saison</h2>
+<ul>
+<li>Le soleil tape fort toute l'année : crème solaire sans danger pour les coraux, chapeau et eau.</li>
+<li>Des sargasses peuvent toucher les plages exposées à l'est à certaines périodes. La côte ouest est souvent épargnée. <a href="{beaches}">Voir notre guide des plages</a>.</li>
+<li>Les dates des événements changent chaque année : vérifiez-les avant de réserver.</li>
+</ul>""",
+        },
+    },
+    "airport": {
+        "img": 10,
+        "en": {
+            "title": "Getting to Cul-de-Sac from SXM Airport: Flights, Car Rental and Driving Tips",
+            "desc": "How to get from Princess Juliana Airport (SXM) to Cul-de-Sac on the French side of Saint Martin: flights, car rental, the 30-minute drive, crossing between the Dutch and French sides, currency and practical tips.",
+            "h1": "From SXM airport to the villa",
+            "card": "Flights, car rental and the 30-minute drive.",
+            "body": """
+<p>Most visitors arrive at Princess Juliana International Airport (SXM), on the Dutch side of the island. The villa is in Cul-de-Sac, on the French side, about 30 minutes away by car. Here is everything you need for a smooth arrival.</p>
+<h2>Flying in</h2>
+<ul>
+<li><strong>Princess Juliana International (SXM)</strong> is the island's main airport, with direct flights from several cities in the United States, Canada and Europe, depending on the season. It is famous for the planes landing just above Maho Beach.</li>
+<li><strong>Grand Case–Espérance (SFG)</strong> is a small regional airport on the French side, used mainly for short hops to and from nearby islands such as Guadeloupe and St Barths.</li>
+</ul>
+<h2>Renting a car</h2>
+<p>We strongly recommend a rental car: it is by far the easiest way to reach the villa and to explore the beaches, Grand Case and Marigot. Rental companies have desks at or near the airport. Book ahead in high season, when cars can run out.</p>
+<ul>
+<li>Driving is on the right, as in the United States and mainland Europe.</li>
+<li>Roads are narrow in places and traffic can be slow around Simpson Bay and Philipsburg at rush hour.</li>
+<li>The villa has private parking.</li>
+</ul>
+<h2>The drive to Cul-de-Sac</h2>
+<p>From the airport, the route crosses from the Dutch side to the French side without any border control: the two sides have shared the island freely for centuries. Count about 30 minutes in normal traffic. We send detailed directions and the exact address after booking, and arrival is self check-in, so you can arrive at your own pace.</p>
+<div class="callout"><p><strong>Our tip:</strong> stop at a supermarket on the way for breakfast and drinks, so you can enjoy your first evening by the pool without going out again.</p></div>
+<h2>Practical information</h2>
+<ul>
+<li><strong>Currency:</strong> the euro on the French side, the Caribbean guilder on the Dutch side. US dollars are widely accepted across the island, and cards are accepted in most places.</li>
+<li><strong>Language:</strong> French on the French side, but English is spoken almost everywhere.</li>
+<li><strong>Electricity:</strong> the French side uses European-style plugs. Bring an adapter for American devices.</li>
+<li><strong>Entry requirements:</strong> rules depend on your nationality. Check the official requirements for Saint-Martin before you travel.</li>
+</ul>""",
+        },
+        "fr": {
+            "title": "De l'aéroport SXM à Cul-de-Sac : vols, location de voiture et conseils de route",
+            "desc": "Comment aller de l'aéroport Princess Juliana (SXM) à Cul-de-Sac, côté français de Saint-Martin : vols, location de voiture, 30 minutes de route, passage entre côté hollandais et côté français, monnaie et conseils pratiques.",
+            "h1": "De l'aéroport SXM à la villa",
+            "card": "Vols, location de voiture et 30 minutes de route.",
+            "body": """
+<p>La plupart des voyageurs arrivent à l'aéroport international Princess Juliana (SXM), côté hollandais. La villa se trouve à Cul-de-Sac, côté français, à environ 30 minutes en voiture. Voici tout ce qu'il faut savoir pour une arrivée en douceur.</p>
+<h2>En avion</h2>
+<ul>
+<li><strong>Princess Juliana (SXM)</strong> est l'aéroport principal de l'île, avec des vols directs depuis plusieurs villes des États-Unis, du Canada et d'Europe selon la saison, dont Paris. Il est célèbre pour ses avions qui atterrissent juste au-dessus de la plage de Maho.</li>
+<li><strong>Grand Case–L'Espérance (SFG)</strong> est un petit aéroport régional côté français, utilisé surtout pour les liaisons avec les îles voisines comme la Guadeloupe et Saint-Barthélemy.</li>
+</ul>
+<h2>Louer une voiture</h2>
+<p>Nous vous conseillons vivement de louer une voiture : c'est de loin le plus simple pour rejoindre la villa et découvrir les plages, Grand Case et Marigot. Les loueurs ont des comptoirs à l'aéroport ou à proximité. Réservez à l'avance en haute saison, les voitures peuvent manquer.</p>
+<ul>
+<li>On roule à droite, comme en France.</li>
+<li>Les routes sont parfois étroites, et la circulation peut être lente autour de Simpson Bay et Philipsburg aux heures de pointe.</li>
+<li>La villa dispose d'un parking privé.</li>
+</ul>
+<h2>La route jusqu'à Cul-de-Sac</h2>
+<p>Depuis l'aéroport, on passe du côté hollandais au côté français sans aucun contrôle : les deux parties partagent librement l'île depuis des siècles. Comptez environ 30 minutes sans embouteillage. Nous vous envoyons l'itinéraire détaillé et l'adresse exacte après la réservation, et l'arrivée est autonome : vous arrivez à votre rythme.</p>
+<div class="callout"><p><strong>Notre conseil :</strong> arrêtez-vous dans un supermarché sur la route pour le petit-déjeuner et les boissons, et profitez de votre première soirée au bord de la piscine sans ressortir.</p></div>
+<h2>Infos pratiques</h2>
+<ul>
+<li><strong>Monnaie :</strong> l'euro côté français, le florin caribéen côté hollandais. Le dollar américain est accepté presque partout, et la carte bancaire dans la plupart des commerces.</li>
+<li><strong>Langue :</strong> le français côté français, mais l'anglais est parlé presque partout.</li>
+<li><strong>Électricité :</strong> prises européennes côté français, comme en métropole.</li>
+<li><strong>Formalités :</strong> elles dépendent de votre nationalité. Vérifiez les conditions officielles d'entrée à Saint-Martin avant de partir.</li>
 </ul>""",
         },
     },

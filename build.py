@@ -554,7 +554,7 @@ def build_guide(lang, key):
     t = g[lang]
     home = PAGES["home"][i]
     u = UI[lang]
-    body = t["body"].replace("{pinel}", link(path, PAGES["pinel"][i])).replace("{gc}", link(path, PAGES["gc"][i]))
+    body = t["body"].replace("{pinel}", link(path, PAGES["pinel"][i])).replace("{gc}", link(path, PAGES["gc"][i])).replace("{beaches}", link(path, PAGES["beaches"][i]))
     ld = [
         {"@context": "https://schema.org", "@type": "Article", "headline": t["h1"], "description": t["desc"],
          "image": img_abs(g["img"]), "inLanguage": lang, "datePublished": "2026-10-26", "dateModified": "2026-10-26",

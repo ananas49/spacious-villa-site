@@ -74,7 +74,7 @@
     var nightWord = function (k) { return fr ? (k > 1 ? 'nuits' : 'nuit') : (k > 1 ? 'nights' : 'night'); };
     var addDays = function (v, k) { var d = new Date(v + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + k); return iso(d); };
     var between = function (a, b) { return Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 86400000); };
-    var noteHtml = '<p class="calc-note">' + (fr ? 'Hors taxe de séjour. Aucuns frais de service.' : 'Excluding tourist tax. No service fees.') + '</p>';
+    var noteHtml = '<p class="calc-note">' + (fr ? 'Ménage inclus, aucuns frais de service. Hors taxe de séjour.' : 'Cleaning included, no service fees. Excluding tourist tax.') + '</p>';
 
     var payLine = function (total, checkin) {
       var days = between(today, checkin);
@@ -174,7 +174,8 @@
         var pct = Math.round(R.weekly[1] * 100);
         rows += '<tr class="calc-disc"><th scope="row">' + (fr ? 'Réduction séjour à la semaine (−' + pct + ' %)' : 'Weekly stay discount (−' + pct + '%)') + '</th><td>−' + fmt(r.disc) + '</td></tr>';
       }
-      rows += '<tr><th scope="row">' + (fr ? 'Frais de ménage' : 'Cleaning fee') + '</th><td>' + fmt(R.cleaning) + '</td></tr>';
+      if (R.cleaning) rows += '<tr><th scope="row">' + (fr ? 'Frais de ménage' : 'Cleaning fee') + '</th><td>' + fmt(R.cleaning) + '</td></tr>';
+      else rows += '<tr><th scope="row">' + (fr ? 'Ménage' : 'Cleaning') + '</th><td>' + (fr ? 'Inclus' : 'Included') + '</td></tr>';
       var html = '<table class="calc"><tbody>' + rows + '</tbody><tfoot><tr><th scope="row">Total <span class="cur">' + (fr ? 'EUR' : 'USD') + '</span></th><td>' + fmt(r.total) + '</td></tr></tfoot></table>' +
         '<p class="calc-pay">' + payLine(r.total, a) + '</p>' + noteHtml;
       if (r.nights < r.minNeeded) {
@@ -186,7 +187,7 @@
       calRender();
       if (isMain) {
         setField('Nuits', r.nights + (r.nights < r.minNeeded ? ' (minimum ' + r.minNeeded + ' pour ces dates)' : ''));
-        setField('Estimation', fmt(r.sub) + (r.disc ? ' − ' + fmt(r.disc) + ' réduction semaine' : '') + ' + ' + fmt(R.cleaning) + ' ménage = ' + fmt(r.total) + (fr ? '' : ' (USD)'));
+        setField('Estimation', fmt(r.sub) + (r.disc ? ' − ' + fmt(r.disc) + ' réduction semaine' : '') + (R.cleaning ? ' + ' + fmt(R.cleaning) + ' ménage' : ' (ménage inclus)') + ' = ' + fmt(r.total) + (fr ? '' : ' (USD)'));
       }
     };
 
