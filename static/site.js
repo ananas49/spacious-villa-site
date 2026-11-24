@@ -2,6 +2,15 @@
   function q(scope, role) { return scope.querySelector('[data-role="' + role + '"]'); }
   function iso(d) { return d.toISOString().slice(0, 10); }
 
+  // Booked nights from the iCal calendars (Netlify function)
+  var BOOKED = new Set();
+  if (location.protocol !== 'file:') {
+    fetch('/api/availability').then(function (r) { return r.ok ? r.json() : { booked: [] }; }).then(function (d) {
+      (d.booked || []).forEach(function (x) { BOOKED.add(x); });
+      document.dispatchEvent(new Event('availability'));
+    }).catch(function () {});
+  }
+
   // Dates: no past dates, check-out after check-in
   var today = iso(new Date());
   document.querySelectorAll('input[type="date"]').forEach(function (el) { el.min = today; });
@@ -104,6 +113,10 @@
       var todayD = new Date(today + 'T00:00:00Z');
       var minView = new Date(Date.UTC(todayD.getUTCFullYear(), todayD.getUTCMonth(), 1));
       var maxView = new Date(Date.UTC(todayD.getUTCFullYear(), todayD.getUTCMonth() + 17, 1));
+      var picking = a && !b, limit = null;
+      if (picking) {
+        for (var k = 1; k <= 400; k++) { var t = addDays(a, k); if (BOOKED.has(t)) { limit = t; break; } }
+      }
       var html = '<div class="cal-nav"><button type="button" class="cal-prev" aria-label="' + (fr ? 'Mois précédent' : 'Previous month') + '"' + (view <= minView ? ' disabled' : '') + '>‹</button>' +
         '<button type="button" class="cal-next" aria-label="' + (fr ? 'Mois suivant' : 'Next month') + '"' + (view >= maxView ? ' disabled' : '') + '>›</button></div><div class="cal-months">';
       for (var m = 0; m < 2; m++) {
@@ -121,15 +134,19 @@
           var d = new Date(Date.UTC(ms.getUTCFullYear(), ms.getUTCMonth(), dn)), v = iso(d);
           var price = R[seasonOf(R, d)][0];
           var cls = 'cal-day';
+          var booked = BOOKED.has(v);
+          var blocked = v < today || (booked && !(picking && v === limit)) || (picking && limit && v > limit);
+          if (booked) cls += ' is-booked';
           if (a && v === a) cls += ' is-start';
           if (b && v === b) cls += ' is-end';
           if (a && b && v > a && v < b) cls += ' in-range';
           var label = new Intl.DateTimeFormat(loc, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(d) + ', ' + fmt(price);
-          html += '<button type="button" class="' + cls + '" data-date="' + v + '" aria-label="' + label + '"' + (v < today ? ' disabled' : '') +
-            ((v === a || v === b) ? ' aria-pressed="true"' : '') + '><b>' + dn + '</b><i>' + (v < today ? '' : fmt(price)) + '</i></button>';
+          html += '<button type="button" class="' + cls + '" data-date="' + v + '" aria-label="' + label + '"' + (blocked ? ' disabled' : '') +
+            ((v === a || v === b) ? ' aria-pressed="true"' : '') + '><b>' + dn + '</b><i>' + (v < today || booked ? '' : fmt(price)) + '</i></button>';
         }
         html += '</div></div>';
       }
+      if (BOOKED.size) html += '</div><p class="cal-legend">' + (fr ? 'Les dates barrées sont déjà réservées.' : 'Crossed-out dates are already booked.') + '</p><div>';
       cal.innerHTML = html + '</div>';
     };
     if (cal) {
@@ -178,6 +195,12 @@
       else rows += '<tr><th scope="row">' + (fr ? 'Ménage' : 'Cleaning') + '</th><td>' + (fr ? 'Inclus' : 'Included') + '</td></tr>';
       var html = '<table class="calc"><tbody>' + rows + '</tbody><tfoot><tr><th scope="row">Total <span class="cur">' + (fr ? 'EUR' : 'USD') + '</span></th><td>' + fmt(r.total) + '</td></tr></tfoot></table>' +
         '<p class="calc-pay">' + payLine(r.total, a) + '</p>' + noteHtml;
+      var clash = false;
+      for (var k2 = 0; k2 < r.nights; k2++) { if (BOOKED.has(addDays(a, k2))) { clash = true; break; } }
+      if (clash) {
+        html += '<p class="warn">' + (fr ? 'Certaines de ces nuits sont déjà réservées. Choisissez d’autres dates ou écrivez-nous.' : 'Some of these nights are already booked. Choose other dates or message us.') + '</p>';
+      }
+      if (isMain) setField('Disponibilité', clash ? 'ATTENTION : dates déjà réservées selon le calendrier' : (BOOKED.size ? 'Dates libres selon le calendrier' : ''));
       if (r.nights < r.minNeeded) {
         html += '<p class="warn">' + (fr
           ? 'Le séjour minimum pour ces dates est de ' + r.minNeeded + ' nuits.'
@@ -206,6 +229,7 @@
       });
     }
     ['change', 'input'].forEach(function (ev) { form.addEventListener(ev, update); });
+    document.addEventListener('availability', update);
     update();
   });
 

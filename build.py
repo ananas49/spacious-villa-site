@@ -567,6 +567,7 @@ def sec_booking(lang, path):
 <h2>{t['you']}</h2>
 <input type="hidden" name="Nuits" value="">
 <input type="hidden" name="Estimation" value="">
+<input type="hidden" name="Disponibilité" value="">
 <input type="hidden" name="Langue du client" value="{'Anglais' if en else 'Français'}">
 <label for="name">{e(h['name'])}</label><input id="name" name="Nom" autocomplete="name" required>
 <div class="field-row">

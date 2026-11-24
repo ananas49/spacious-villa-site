@@ -2,6 +2,9 @@
   command = "python3 build.py"
   publish = "dist"
 
+[functions]
+  directory = "netlify/functions"
+
 [build.processing.html]
   pretty_urls = true
 

@@ -454,3 +454,7 @@ section.tight-top { margin-top: 24px; }
 .place:not(.has-photo) .place-meta { display: none; }
 @media (max-width: 560px) { .place:not(.has-photo) { grid-template-columns: minmax(0, 1fr); gap: 12px; } }
 .loc-intro { font-size: 1.1rem; max-width: 64ch; margin: 8px 0 0; }
+
+.cal-day.is-booked b { text-decoration: line-through; color: var(--ink-soft); font-weight: 400; }
+.cal-day.is-booked:disabled { color: var(--ink-soft); }
+.cal-legend { font-family: var(--display); font-size: .85rem; color: var(--ink-soft); margin: 10px 0 0; }
