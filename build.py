@@ -3,9 +3,9 @@
   python3 build.py            -> dist/     (version en ligne : URLs propres, photos dans /img)
   python3 build.py preview    -> preview/  (aperçu : liens relatifs, photos de l'ancien site)
 """
-import html, json, os, posixpath, shutil, sys, math
+import datetime, html, json, os, posixpath, shutil, sys, math
 import config as C
-from content import PHOTOS, PAGES, UI, HOME, GUIDES, faq, page_meta
+from content import PHOTOS, PAGES, UI, HOME, GUIDES, faq, page_meta, REVIEWS, SERVICES, PLACES
 
 MODE = "preview" if "preview" in sys.argv[1:] else "prod"
 OUT = os.path.join(os.path.dirname(__file__), "preview" if MODE == "preview" else "dist")
@@ -69,6 +69,150 @@ def asset(frm, name):
     return posixpath.relpath(name, posixpath.dirname(frm) or ".")
 
 
+TODAY = datetime.date.today().isoformat()
+GUIDE_PUBLISHED = {"season": "2026-11-24", "airport": "2026-11-24"}
+GUIDE_PLACE = {"pinel": "pinel", "gc": "grandcase", "beaches": "orient", "airport": "airport"}
+
+
+def webp_base(i):
+    base = PHOTOS[i][0][:-4]
+    if MODE == "prod" and os.path.exists(os.path.join(os.path.dirname(__file__), "static", "img", base + ".webp")):
+        return base
+    return None
+
+
+def img_attrs(i, sizes="100vw"):
+    """src + srcset WebP (800 et 1600 px) en ligne ; JPEG dans l'aperçu."""
+    base = webp_base(i)
+    if not base:
+        return f'src="{img_src(i)}"'
+    return f'src="/img/{base}.webp" srcset="/img/{base}-800.webp 800w, /img/{base}.webp 1600w" sizes="{sizes}"'
+
+
+def place_photo(key):
+    """Photo d'un lieu si elle a été ajoutée dans static/img/places/<clé>.jpg"""
+    p = os.path.join(os.path.dirname(__file__), "static", "img", "places", key + ".jpg")
+    if not os.path.exists(p):
+        return None
+    w, h = 1600, 1067
+    try:
+        from PIL import Image
+        w, h = Image.open(p).size
+    except Exception:
+        pass
+    return (f"img/places/{key}.jpg" if MODE == "preview" else f"/img/places/{key}.jpg"), w, h
+
+
+def guide_cover(key):
+    """(src, alt-index-or-None, w, h) : photo du lieu si disponible, sinon photo de la villa."""
+    place = GUIDE_PLACE.get(key)
+    ph = place_photo(place) if place else None
+    if ph:
+        return ph
+    return None
+
+
+def review_card(lang, r):
+    orig = r["lang"] == lang
+    text = r["text"] if orig else r["tr"]
+    note = ""
+    if not orig:
+        note = f'<span class="rv-tr">{"Translated from French" if lang == "en" else "Traduit de l’anglais"}</span>'
+    li = 0 if lang == "en" else 1
+    stars = "5 stars out of 5" if lang == "en" else "5 étoiles sur 5"
+    return (f'<figure class="rv"><p class="rv-stars" role="img" aria-label="{stars}">★★★★★</p>'
+            f'<blockquote><p>{e(text)}</p></blockquote>'
+            f'<figcaption><strong>{e(r["name"])}</strong>, {e(r["city"][li])}<span>{e(r["date"][li])} · {e(r["trip"][li])}</span>{note}</figcaption></figure>')
+
+
+def sec_reviews(lang, path=None, home=False):
+    if not C.RATING:
+        return ""
+    h, u = HOME[lang], UI[lang]
+    i = LANG_IDX[lang]
+    items = [r for r in REVIEWS if r["home"]] if home else REVIEWS
+    cards = "".join(review_card(lang, r) for r in items)
+    if home:
+        more = f'<a class="more" href="{link(path, PAGES["villa"][i], "#reviews")}">{"Read all reviews" if lang == "en" else "Lire tous les avis"}</a>'
+        return f"""<section id="reviews" class="reviews-sec"><div class="wrap">
+<div class="section-head"><h2>{e(h['rev_h'])}</h2>{more}</div>
+<div class="rv-grid rv-home">{cards}</div>
+</div></section>
+"""
+    return f"""<section id="reviews" class="reviews-sec"><div class="wrap">
+<div class="reviews"><p class="score">{C.RATING}<small>{e(h['rev_sub'](C.RATING, C.REVIEW_COUNT))}</small></p>
+<div><h2>{e(h['rev_h'])}</h2><p>{e(h['rev_p'])}</p></div></div>
+<div class="rv-grid">{cards}</div>
+</div></section>
+"""
+
+
+def sec_services(lang, compact=False):
+    s = SERVICES[lang]
+    btn = ""
+    if C.WHATSAPP:
+        btn = f'<a class="btn" href="{e(C.whatsapp_link(s["wa"]))}" rel="noopener">{e(s["btn"])}</a>'
+    items = "".join(f"<li>{e(x)}</li>" for x in s["items"])
+    if compact:
+        ghost = btn.replace('class="btn"', 'class="btn btn-ghost"')
+        return f'<div class="co-step co-services"><h2>{e(s["h"])}</h2><p>{e(s["p"])}</p>{ghost}</div>'
+    return f"""<section class="services"><div class="wrap services-in">
+<div><h2>{e(s['h'])}</h2><p>{e(s['p'])}</p>{btn}</div>
+<ul class="direct-list">{items}</ul>
+</div></section>
+"""
+
+
+def sec_places(lang, path):
+    i = LANG_IDX[lang]
+    en = lang == "en"
+    out = ""
+    for p in PLACES:
+        name, how, desc = p[lang]
+        ph = place_photo(p["key"])
+        if ph:
+            src, w, hgt = ph
+            media = f'<img src="{src}" alt="{e(name)}" width="{w}" height="{hgt}" loading="lazy"><span class="place-badge">{e(p["time"])}</span>'
+        else:
+            media = f'<div class="place-time"><b>{e(p["time"])}</b><span>{e(how)}</span></div>'
+        guide = ""
+        if p["guide"]:
+            g = GUIDES[p["guide"]][lang]
+            guide = f'<a class="more" href="{link(path, PAGES[p["guide"]][i])}">{e(g["h1"])}</a>'
+        out += f"""<article class="place{' has-photo' if ph else ''}">
+<div class="place-media">{media}</div>
+<div class="place-body"><p class="place-meta">{e(p['time'])} {e(how)}</p><h2>{e(name)}</h2><p>{e(desc)}</p>{guide}</div>
+</article>
+"""
+    return f'<section class="places-sec tight"><div class="wrap places">{out}</div></section>\n'
+
+
+def related_guides(lang, path, key):
+    i = LANG_IDX[lang]
+    links = "".join(f'<li><a href="{link(path, PAGES[k][i])}">{e(GUIDES[k][lang]["h1"])}</a></li>' for k in GUIDES if k != key)
+    title = "More island guides" if lang == "en" else "Nos autres guides"
+    return f'<nav class="related" aria-label="{title}"><h2>{title}</h2><ul>{links}</ul></nav>'
+
+
+def build_404():
+    out = head("en", "home", "Page not found | " + C.SITE_NAME, "Page not found.", PAGES["home"][0], 0, None, noindex=True)
+    out += header("en", "home", PAGES["home"][0])
+    out += f"""<main id="main" class="wrap thanks"><div>
+<h1>Page not found</h1><p>This page does not exist or has moved. Cette page n'existe pas ou a été déplacée.</p>
+<p><a class="btn" href="{link(PAGES['home'][0], PAGES['home'][0])}">Home</a> <a class="btn btn-ghost" href="{link(PAGES['home'][0], PAGES['home'][1])}">Accueil en français</a></p>
+</div></main>
+"""
+    out += footer("en", PAGES["home"][0])
+    return "404.html", out
+
+
+def preload_tag(i):
+    base = webp_base(i)
+    if base:
+        return f'<link rel="preload" as="image" href="/img/{base}.webp" imagesrcset="/img/{base}-800.webp 800w, /img/{base}.webp 1600w" imagesizes="100vw" fetchpriority="high">'
+    return f'<link rel="preload" as="image" href="{img_src(i)}" fetchpriority="high">'
+
+
 def head(lang, key, title, desc, path, image_i=0, jsonld=None, noindex=False):
     en_p, fr_p = PAGES[key]
     alt = "\n".join([
@@ -103,7 +247,7 @@ def head(lang, key, title, desc, path, image_i=0, jsonld=None, noindex=False):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-<link rel="preload" as="image" href="{img_src(image_i)}" fetchpriority="high">
+{preload_tag(image_i)}
 <link rel="stylesheet" href="{asset(path, 'styles.css')}">
 {ld}</head>
 <body>
@@ -302,7 +446,7 @@ def sec_mural(lang):
     i = LANG_IDX[lang]
     h = HOME[lang]
     return f"""<section class="mural" aria-labelledby="mural-title">
-<img src="{img_src(1)}" alt="{e(PHOTOS[1][3 + i])}" width="{PHOTOS[1][2][0]}" height="{PHOTOS[1][2][1]}" loading="lazy">
+<img {img_attrs(1)} alt="{e(PHOTOS[1][3 + i])}" width="{PHOTOS[1][2][0]}" height="{PHOTOS[1][2][1]}" loading="lazy">
 <div class="wrap mural-cap"><h2 id="mural-title">{e(h['mural_h'])}</h2><p>{e(h['mural_p'])}</p></div>
 </section>
 """
@@ -315,7 +459,7 @@ def sec_gallery(lang, path, teaser=False):
     if teaser:
         tiles = ""
         for n in (0, 2, 3, 4, 5):
-            tiles += f'<a href="{link(path, photos_page)}" class="g{n}"><img src="{img_src(n)}" alt="{e(PHOTOS[n][3 + i])}" loading="lazy" width="{PHOTOS[n][2][0]}" height="{PHOTOS[n][2][1]}"></a>'
+            tiles += f'<a href="{link(path, photos_page)}" class="g{n}"><img {img_attrs(n, '(max-width: 760px) 100vw, 50vw')} alt="{e(PHOTOS[n][3 + i])}" loading="lazy" width="{PHOTOS[n][2][0]}" height="{PHOTOS[n][2][1]}"></a>'
         return f"""<section id="photos"><div class="wrap">
 <div class="section-head"><h2>{e(h['photos_h'])}</h2><a class="more" href="{link(path, photos_page)}">{e(u['see_photos'])} ({len(PHOTOS)})</a></div>
 <div class="gallery gallery-teaser">{tiles}</div>
@@ -323,7 +467,7 @@ def sec_gallery(lang, path, teaser=False):
 """
     gal = ""
     for n in range(len(PHOTOS)):
-        gal += f'<button type="button" class="g{n}"><img src="{img_src(n)}" alt="{e(PHOTOS[n][3 + i])}" loading="lazy" width="{PHOTOS[n][2][0]}" height="{PHOTOS[n][2][1]}"></button>'
+        gal += f'<button type="button" class="g{n}"><img {img_attrs(n, '(max-width: 760px) 100vw, 50vw')} alt="{e(PHOTOS[n][3 + i])}" loading="lazy" width="{PHOTOS[n][2][0]}" height="{PHOTOS[n][2][1]}"></button>'
     return f"""<section id="photos" class="tight"><div class="wrap">
 <div class="gallery">{gal}</div>
 </div></section>
@@ -362,17 +506,6 @@ def sec_location(lang, with_title=True):
     return f"""<section id="location" class="location"><div class="wrap">
 {title}<p>{e(h['loc_p'])}</p>
 <div class="route" role="list">{stops}</div>
-</div></section>
-"""
-
-
-def sec_reviews(lang):
-    h = HOME[lang]
-    if not C.RATING:
-        return ""
-    return f"""<section id="reviews"><div class="wrap reviews">
-<p class="score">{C.RATING}<small>{e(h['rev_sub'](C.RATING, C.REVIEW_COUNT))}</small></p>
-<div><h2>{e(h['rev_h'])}</h2><p>{e(h['rev_p'])}</p></div>
 </div></section>
 """
 
@@ -423,7 +556,7 @@ def sec_booking(lang, path):
 </div>
 
 <aside class="co-card" aria-label="{t['price_h']}">
-<div class="co-head"><img src="{img_src(0)}" alt="" width="{PHOTOS[0][2][0]}" height="{PHOTOS[0][2][1]}">
+<div class="co-head"><img {img_attrs(0, '104px')} alt="" width="{PHOTOS[0][2][0]}" height="{PHOTOS[0][2][1]}">
 <div><p class="co-title">{e(C.SITE_NAME)}</p><p class="co-sub">{t['sub']}</p>{rating}</div></div>
 <div class="co-block"><p class="co-h">{t['cancel_h']}</p><p>{t['cancel_p']}</p></div>
 <div class="co-block"><p class="co-h">{t['price_h']}</p>
@@ -450,6 +583,7 @@ def sec_booking(lang, path):
 <div class="co-step co-how">
 <h2>{e(h['steps_h'])}</h2><ol class="steps">{steps}</ol>
 </div>
+{sec_services(lang, compact=True)}
 </form>
 </div></section>
 """
@@ -467,7 +601,10 @@ def sec_guides(lang, path):
     cards = ""
     for k, g in GUIDES.items():
         gp = PAGES[k][i]
-        cards += f'<a class="guide-link" href="{link(path, gp)}"><img src="{img_src(g["img"])}" alt="" loading="lazy" width="800" height="600"><h3>{e(g[lang]["h1"])}</h3><p>{e(g[lang]["card"])}</p></a>'
+        cov = guide_cover(k)
+        imgtag = (f'<img src="{cov[0]}" alt="" loading="lazy" width="{cov[1]}" height="{cov[2]}">' if cov
+                  else f'<img {img_attrs(g["img"], "(max-width: 860px) 100vw, 33vw")} alt="" loading="lazy" width="800" height="600">')
+        cards += f'<a class="guide-link" href="{link(path, gp)}">{imgtag}<h3>{e(g[lang]["h1"])}</h3><p>{e(g[lang]["card"])}</p></a>'
     return f"""<section id="guides"><div class="wrap">
 <div class="section-head"><h2>{e(h['guides_h'])}</h2><p>{e(h['guides_p'])}</p></div>
 <div class="guides">{cards}</div>
@@ -489,7 +626,7 @@ def build_home(lang):
     facts = "".join(f"<li><strong>{n}</strong>{e(t)}</li>" for n, t in h["facts"])
     out += f"""<main id="main">
 <section class="hero" aria-labelledby="hero-title">
-<img src="{img_src(0)}" alt="{e(PHOTOS[0][3 + i])}" width="{PHOTOS[0][2][0]}" height="{PHOTOS[0][2][1]}" fetchpriority="high">
+<img {img_attrs(0)} alt="{e(PHOTOS[0][3 + i])}" width="{PHOTOS[0][2][0]}" height="{PHOTOS[0][2][1]}" fetchpriority="high">
 <div class="wrap hero-inner">
 <div>
 <h1 id="hero-title">{e(h['h1'])}</h1>
@@ -509,6 +646,7 @@ def build_home(lang):
     out += sec_intro(lang, path, full=False)
     out += sec_mural(lang)
     out += sec_gallery(lang, path, teaser=True)
+    out += sec_reviews(lang, path, home=True)
     out += cta(lang, path)
     out += "</main>\n"
     out += footer(lang, path)
@@ -528,11 +666,12 @@ def build_page(lang, key):
     img = {"villa": 0, "photos": 0, "location": 3, "book": 1, "faq": 0}[key]
     body = ""
     if key == "villa":
-        body = sec_intro(lang, path, full=True).replace('<section id="villa">', '<section id="villa" class="tight">') + sec_highlights(lang) + sec_amenities(lang).replace('class="tight"', '') + sec_reviews(lang) + cta(lang, path)
+        body = sec_intro(lang, path, full=True).replace('<section id="villa">', '<section id="villa" class="tight">') + sec_highlights(lang) + sec_amenities(lang).replace('class="tight"', '') + sec_services(lang) + sec_reviews(lang) + cta(lang, path)
     elif key == "photos":
         body = sec_gallery(lang, path) + cta(lang, path)
     elif key == "location":
-        body = sec_location(lang, with_title=False).replace('class="location"', 'class="location tight-top"') + sec_guides(lang, path) + cta(lang, path)
+        body = (f'<div class="wrap"><p class="loc-intro">{e(HOME[lang]["loc_p"])}</p></div>' + sec_places(lang, path)
+                + sec_services(lang) + sec_guides(lang, path).replace('<section id="guides">', '<section id="guides" class="location">') + cta(lang, path))
     elif key == "book":
         body = sec_booking(lang, path)
     elif key == "faq":
@@ -557,13 +696,18 @@ def build_guide(lang, key):
     body = t["body"].replace("{pinel}", link(path, PAGES["pinel"][i])).replace("{gc}", link(path, PAGES["gc"][i])).replace("{beaches}", link(path, PAGES["beaches"][i]))
     ld = [
         {"@context": "https://schema.org", "@type": "Article", "headline": t["h1"], "description": t["desc"],
-         "image": img_abs(g["img"]), "inLanguage": lang, "datePublished": "2026-10-26", "dateModified": "2026-10-26",
+         "image": img_abs(g["img"]), "inLanguage": lang, "datePublished": GUIDE_PUBLISHED.get(key, "2026-10-26"), "dateModified": TODAY,
          "author": {"@type": "Organization", "name": C.SITE_NAME, "url": url(home)},
          "publisher": {"@type": "Organization", "name": C.SITE_NAME}, "mainEntityOfPage": url(path)},
         {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": u["home"], "item": url(home)},
             {"@type": "ListItem", "position": 2, "name": t["h1"], "item": url(path)}]},
     ]
+    cov = guide_cover(key)
+    if cov:
+        cover_html = f'<img class="article-cover" src="{cov[0]}" alt="{e(t["h1"])}" width="{cov[1]}" height="{cov[2]}" fetchpriority="high">'
+    else:
+        cover_html = f'<img class="article-cover" {img_attrs(g["img"], "(max-width: 1180px) 100vw, 1180px")} alt="{e(PHOTOS[g["img"]][3 + i])}" width="1600" height="800" fetchpriority="high">'
     out = head(lang, key, t["title"], t["desc"], path, g["img"], ld)
     out += header(lang, key, path)
     cta_h = "Stay three minutes from Pinel Island" if lang == "en" else "Séjournez à trois minutes de l'îlet Pinel"
@@ -574,9 +718,10 @@ def build_guide(lang, key):
 <p class="crumbs"><a href="{link(path, home)}">{e(u['home'])}</a> / {e(t['h1'])}</p>
 <h1>{e(t['h1'])}</h1>
 </div>
-<img class="article-cover" src="{img_src(g['img'])}" alt="{e(PHOTOS[g['img']][3 + i])}" width="1600" height="800" fetchpriority="high">
+{cover_html}
 <article class="prose">{body}
 <div class="panel" style="margin-top:40px"><h2 style="margin-top:0">{e(cta_h)}</h2><p>{e(cta_p)}</p><a class="btn" href="{link(path, PAGES['book'][i])}">{e(u['book'])}</a></div>
+{related_guides(lang, path, key)}
 </article>
 </div></main>
 """
@@ -660,6 +805,8 @@ def main():
             pages.append(build_guide(lang, k))
         for k in ("legal", "privacy", "thanks"):
             pages.append(build_simple(lang, k))
+    if MODE == "prod":
+        pages.append(build_404())
     for path, content in pages:
         if MODE == "preview" and "/" in path:  # aperçu : chemins d'images relatifs depuis /fr/
             content = content.replace('"img/', '"../img/')
@@ -681,7 +828,7 @@ def main():
             if key == "thanks":
                 continue
             for p in (en_p, fr_p):
-                rows.append(f"""<url><loc>{url(p)}</loc><lastmod>2026-10-26</lastmod>
+                rows.append(f"""<url><loc>{url(p)}</loc><lastmod>{TODAY}</lastmod>
 <xhtml:link rel="alternate" hreflang="en" href="{url(en_p)}"/><xhtml:link rel="alternate" hreflang="fr" href="{url(fr_p)}"/><xhtml:link rel="alternate" hreflang="x-default" href="{url(en_p)}"/></url>""")
         with open(os.path.join(OUT, "sitemap.xml"), "w") as f:
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' + "\n".join(rows) + "\n</urlset>\n")

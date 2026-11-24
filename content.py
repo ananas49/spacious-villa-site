@@ -154,7 +154,7 @@ HOME = {
         "price_from": lambda p: f"From <strong>{p}</strong> per night",
         "form_h": "Request your dates",
         "name": "Full name", "email": "Email", "phone": "Phone or WhatsApp", "message": "Anything we should know?",
-        "message_ph": "Arrival time, children's ages, occasion…",
+        "message_ph": "Arrival time, children's ages, airport pick-up, car rental…",
         "consent": "I agree that my details are used to answer my request.",
         "send": "Send my request",
         "form_note": "We reply within 24 hours. Nothing is charged at this stage.",
@@ -218,7 +218,7 @@ HOME = {
         "price_from": lambda p: f"À partir de <strong>{p}</strong> la nuit",
         "form_h": "Demandez vos dates",
         "name": "Nom complet", "email": "E-mail", "phone": "Téléphone ou WhatsApp", "message": "Quelque chose à nous dire ?",
-        "message_ph": "Heure d'arrivée, âge des enfants, occasion…",
+        "message_ph": "Heure d'arrivée, âge des enfants, navette aéroport, location de voiture…",
         "consent": "J'accepte que mes coordonnées soient utilisées pour répondre à ma demande.",
         "send": "Envoyer ma demande",
         "form_note": "Réponse sous 24 heures. Rien n'est débité à ce stade.",
@@ -242,6 +242,12 @@ def faq(lang, cfg):
                     "Arrival is self check-in. We send you the directions and access details before your stay." if en
                     else "L'arrivée est autonome. Nous vous envoyons l'itinéraire et les informations d'accès avant votre séjour."))
     out += [
+        ("Can you pick us up at the airport?" if en else "Pouvez-vous venir nous chercher à l'aéroport ?",
+         "Yes. We can pick you up at SXM airport and drive you to the villa, and take you back at the end of your stay. Ask us on WhatsApp when you contact us." if en
+         else "Oui. Nous pouvons venir vous chercher à l'aéroport SXM et vous conduire à la villa, puis vous y ramener en fin de séjour. Demandez-le-nous sur WhatsApp quand vous nous contactez."),
+        ("Can we rent a car?" if en else "Peut-on louer une voiture ?",
+         "Yes. We rent our own cars to guests at a friendly daily rate. Ask us on WhatsApp when you contact us. Rental companies are also available at the airport." if en
+         else "Oui. Nous louons nos propres voitures à nos voyageurs, à un tarif journalier sympathique. Demandez-le-nous sur WhatsApp quand vous nous contactez. Des loueurs sont aussi présents à l'aéroport."),
         ("Is the pool private?" if en else "La piscine est-elle privée ?",
          "Yes. The pool, the garden and the whole villa are for your group only." if en
          else "Oui. La piscine, le jardin et toute la villa sont réservés à votre groupe."),
@@ -551,14 +557,18 @@ GUIDES = {
 <li><strong>Grand Case–Espérance (SFG)</strong> is a small regional airport on the French side, used mainly for short hops to and from nearby islands such as Guadeloupe and St Barths.</li>
 </ul>
 <h2>Renting a car</h2>
-<p>We strongly recommend a rental car: it is by far the easiest way to reach the villa and to explore the beaches, Grand Case and Marigot. Rental companies have desks at or near the airport. Book ahead in high season, when cars can run out.</p>
+<p>A car is by far the easiest way to explore the beaches, Grand Case and Marigot. Two options:</p>
+<ul>
+<li><strong>Rent a car from us.</strong> We rent our own cars to guests at a friendly daily rate, and we can also pick you up at the airport and drive you to the villa. Just ask on WhatsApp when you contact us.</li>
+<li><strong>Rent from an agency.</strong> Rental companies have desks at or near the airport. Book ahead in high season, when cars can run out.</li>
+</ul>
 <ul>
 <li>Driving is on the right, as in the United States and mainland Europe.</li>
 <li>Roads are narrow in places and traffic can be slow around Simpson Bay and Philipsburg at rush hour.</li>
 <li>The villa has private parking.</li>
 </ul>
 <h2>The drive to Cul-de-Sac</h2>
-<p>From the airport, the route crosses from the Dutch side to the French side without any border control: the two sides have shared the island freely for centuries. Count about 30 minutes in normal traffic. We send detailed directions and the exact address after booking, and arrival is self check-in, so you can arrive at your own pace.</p>
+<p>If you prefer not to drive after your flight, we can pick you up at arrivals: ask us on WhatsApp. If you drive yourself, the route crosses from the Dutch side to the French side without any border control: the two sides have shared the island freely for centuries. Count about 30 minutes in normal traffic. We send detailed directions and the exact address after booking, and arrival is self check-in, so you can arrive at your own pace.</p>
 <div class="callout"><p><strong>Our tip:</strong> stop at a supermarket on the way for breakfast and drinks, so you can enjoy your first evening by the pool without going out again.</p></div>
 <h2>Practical information</h2>
 <ul>
@@ -581,14 +591,18 @@ GUIDES = {
 <li><strong>Grand Case–L'Espérance (SFG)</strong> est un petit aéroport régional côté français, utilisé surtout pour les liaisons avec les îles voisines comme la Guadeloupe et Saint-Barthélemy.</li>
 </ul>
 <h2>Louer une voiture</h2>
-<p>Nous vous conseillons vivement de louer une voiture : c'est de loin le plus simple pour rejoindre la villa et découvrir les plages, Grand Case et Marigot. Les loueurs ont des comptoirs à l'aéroport ou à proximité. Réservez à l'avance en haute saison, les voitures peuvent manquer.</p>
+<p>Une voiture est de loin le plus simple pour découvrir les plages, Grand Case et Marigot. Deux possibilités :</p>
+<ul>
+<li><strong>Louer une voiture auprès de nous.</strong> Nous louons nos propres voitures à nos voyageurs, à un tarif journalier sympathique, et nous pouvons aussi venir vous chercher à l'aéroport pour vous conduire à la villa. Demandez-le-nous sur WhatsApp quand vous nous contactez.</li>
+<li><strong>Louer auprès d'une agence.</strong> Les loueurs ont des comptoirs à l'aéroport ou à proximité. Réservez à l'avance en haute saison, les voitures peuvent manquer.</li>
+</ul>
 <ul>
 <li>On roule à droite, comme en France.</li>
 <li>Les routes sont parfois étroites, et la circulation peut être lente autour de Simpson Bay et Philipsburg aux heures de pointe.</li>
 <li>La villa dispose d'un parking privé.</li>
 </ul>
 <h2>La route jusqu'à Cul-de-Sac</h2>
-<p>Depuis l'aéroport, on passe du côté hollandais au côté français sans aucun contrôle : les deux parties partagent librement l'île depuis des siècles. Comptez environ 30 minutes sans embouteillage. Nous vous envoyons l'itinéraire détaillé et l'adresse exacte après la réservation, et l'arrivée est autonome : vous arrivez à votre rythme.</p>
+<p>Si vous préférez ne pas conduire après le vol, nous pouvons venir vous chercher à l'arrivée : demandez-le-nous sur WhatsApp. Si vous conduisez vous-même, on passe du côté hollandais au côté français sans aucun contrôle : les deux parties partagent librement l'île depuis des siècles. Comptez environ 30 minutes sans embouteillage. Nous vous envoyons l'itinéraire détaillé et l'adresse exacte après la réservation, et l'arrivée est autonome : vous arrivez à votre rythme.</p>
 <div class="callout"><p><strong>Notre conseil :</strong> arrêtez-vous dans un supermarché sur la route pour le petit-déjeuner et les boissons, et profitez de votre première soirée au bord de la piscine sans ressortir.</p></div>
 <h2>Infos pratiques</h2>
 <ul>
@@ -641,3 +655,77 @@ def page_meta(lang, cfg):
                 "Les réponses sur les horaires d'arrivée, les tarifs, le paiement, la caution, les animaux, le règlement et l'annulation à Spacious Villa, Cul-de-Sac, Saint-Martin.",
                 "Bon à savoir", "Ce que nos voyageurs nous demandent avant de réserver."),
     }
+
+
+# Avis réels (Airbnb), texte original + traduction signalée comme telle
+REVIEWS = [
+    {"name": "Chris", "city": ("Glen Ellyn, Illinois", "Glen Ellyn, Illinois"), "date": ("April 2026", "avril 2026"),
+     "trip": ("Stay with children", "Séjour avec enfants"), "lang": "en", "home": False,
+     "text": "Stop looking and immediately book Fanilia's home; easily the best value, best host and best location on the island. Have rented many AirBnbs over the years and I can't recall a friendlier, more communicative or just overall nicer host. Fanilia was helpful with local recommendations (beaches, restaurants), proactively reached out about island water shortages (occasionally happen but house has backup) and answered all our questions with a smile. Listing photos reflect the property accurately, with the pool larger than we anticipated. The outdoor area was spacious and outdoor furniture was high quality and plentiful. The views were beautiful (salt flat/ocean) and the house was well stocked (toilet paper, spices, etc). Beach towels, umbrellas, chairs and snorkeling gear provided. Bedroom AC worked really well. Location equidistant from Orient Beach and Grand Case, which we great. Delicious bakery walkable. Loved being higher up on hill for breeze during day and at night. So pleased!",
+     "tr": "Arrêtez de chercher et réservez tout de suite la maison de Fanilia : de loin le meilleur rapport qualité-prix, la meilleure hôte et le meilleur emplacement de l'île. J'ai loué beaucoup d'Airbnb au fil des ans et je ne me souviens pas d'une hôte plus aimable, plus communicative ou tout simplement plus agréable. Fanilia nous a donné de bonnes adresses (plages, restaurants), nous a prévenus d'elle-même des coupures d'eau sur l'île (cela arrive parfois, mais la maison a une réserve) et a répondu à toutes nos questions avec le sourire. Les photos de l'annonce sont fidèles, et la piscine est plus grande que prévu. L'extérieur est spacieux, avec du mobilier de jardin de qualité et en quantité. La vue est magnifique (salines et océan) et la maison est bien équipée (papier toilette, épices, etc.). Serviettes de plage, parasols, chaises et matériel de snorkeling fournis. La climatisation des chambres fonctionnait très bien. L'emplacement est à égale distance de la Baie Orientale et de Grand Case, ce qui était parfait. Une délicieuse boulangerie à pied. Nous avons adoré être en hauteur, avec la brise le jour comme la nuit. Ravis !"},
+    {"name": "James", "city": ("New Haven, Connecticut", "New Haven, Connecticut"), "date": ("July 2026", "juillet 2026"),
+     "trip": ("Stay with children", "Séjour avec enfants"), "lang": "en", "home": False,
+     "text": "I must say I've rented many houses all over the world. This host is the best of them all. She was very accommodating and gave amazing suggestions and was very quick to respond. The house is perfect, the flow is very nice and the pool is beautiful. House is very clean and safe. 4 minute drive to Orient Beach and the ferry to Pinel Island. Host has two cars for you to use and trust you to pay her a nominal fee for the days you use the car. I took my family and in-laws. Great vacation. In fact, we are booking it now for two weeks next summer. This might turn out to be one of our favorite spots and we will return again and again.",
+     "tr": "J'ai loué beaucoup de maisons dans le monde entier, et cette hôte est la meilleure de toutes. Très arrangeante, d'excellents conseils et très réactive. La maison est parfaite, bien agencée, et la piscine est superbe. La maison est très propre et sûre. À 4 minutes en voiture de la Baie Orientale et du bateau pour l'îlet Pinel. L'hôte met deux voitures à disposition pour un petit montant par jour d'utilisation. J'y suis allé avec ma famille et ma belle-famille : de superbes vacances. D'ailleurs, nous réservons déjà deux semaines pour l'été prochain. Ce sera peut-être l'un de nos endroits préférés, et nous y reviendrons encore et encore."},
+    {"name": "Ruth", "city": ("Deposit, New York", "Deposit, New York"), "date": ("March 2026", "mars 2026"),
+     "trip": ("Group trip", "Voyage en groupe"), "lang": "en", "home": True,
+     "text": "WOW! This place was as beautiful as the pictures. We loved the spaciousness. Fanilia was very responsive to any questions we had. The place was spotless and very nicely kept. It had everything you could possibly need. Easy walk or drive to any place we needed to be. The pool was beautiful - we enjoyed it every day. Wish we could have stayed longer!!!",
+     "tr": "WOW ! La maison est aussi belle que sur les photos. Nous avons adoré l'espace. Fanilia a répondu rapidement à toutes nos questions. Tout était impeccable et très bien entretenu, avec tout ce dont on peut avoir besoin. Facile d'aller partout à pied ou en voiture. La piscine est magnifique, nous en avons profité tous les jours. Nous aurions aimé rester plus longtemps !"},
+    {"name": "Matt", "city": ("Asheville, North Carolina", "Asheville, Caroline du Nord"), "date": ("December 2025", "décembre 2025"),
+     "trip": ("Stay with children", "Séjour avec enfants"), "lang": "en", "home": True,
+     "text": "What a gem - the house and the owners! We stayed here for a week with two families. The outdoor space was a dream! Our kids loved the pool floats. We used the provided beach chairs and beach towels every day. The AC units in all the bedrooms worked great. We rented the hosts' cars for the week and it worked out very well. Fani and Jon were so friendly and helpful. Very peaceful neighborhood. Would definitely recommend!",
+     "tr": "Une perle, la maison comme les propriétaires ! Nous y avons passé une semaine avec deux familles. L'extérieur est un rêve ! Nos enfants ont adoré les bouées de la piscine. Nous avons utilisé tous les jours les chaises et serviettes de plage fournies. La climatisation fonctionnait très bien dans toutes les chambres. Nous avons loué les voitures des hôtes pour la semaine, et c'était très pratique. Fani et Jon ont été très aimables et serviables. Quartier très paisible. Je recommande sans hésiter !"},
+    {"name": "Stéphane", "city": ("Quebec, Canada", "Québec, Canada"), "date": ("January 2026", "janvier 2026"),
+     "trip": ("Group trip", "Voyage en groupe"), "lang": "fr", "home": False,
+     "text": "L'emplacement est tout simplement parfait, idéal pour explorer la région tout en profitant d'un cadre paisible et pittoresque. La propreté des lieux mérite également d'être soulignée. La piscine a été un véritable atout, offrant des moments de détente inoubliables sous le soleil. La vue depuis la villa est à couper le souffle, nous avons passé de merveilleux moments à simplement admirer le paysage. De plus, nous avons particulièrement apprécié la qualité de la communication avec Fanilia et Jean. Votre disponibilité et votre réactivité ont grandement facilité notre séjour.",
+     "tr": "The location is simply perfect, ideal for exploring the area while enjoying a peaceful, picturesque setting. The cleanliness also deserves a mention. The pool was a real highlight, with unforgettable moments of relaxation in the sun. The view from the villa is breathtaking; we spent wonderful moments just admiring the scenery. We especially appreciated the communication with Fanilia and Jean. Your availability and responsiveness made our stay so much easier."},
+    {"name": "Jamoris", "city": ("Lake City, Florida", "Lake City, Floride"), "date": ("April 2026", "avril 2026"),
+     "trip": ("Short stay", "Séjour de quelques nuits"), "lang": "en", "home": True,
+     "text": "The place was amazing, I felt at home the moment I entered onto the property!! The hosts greeted me and my family at check-in. The host introduced us to a transportation guy who helped us around the island!!! If I come back to the island I would choose this spot again. (Home away from home)",
+     "tr": "Un endroit incroyable, je me suis senti chez moi dès mon arrivée ! Les hôtes nous ont accueillis, ma famille et moi, à l'arrivée, et nous ont présenté un chauffeur qui nous a fait découvrir l'île ! Si je reviens sur l'île, je choisirai de nouveau cette maison. (Comme à la maison)"},
+    {"name": "Pascale", "city": ("Candiac, Canada", "Candiac, Canada"), "date": ("April 2024", "avril 2024"),
+     "trip": ("Group trip", "Voyage en groupe"), "lang": "fr", "home": False,
+     "text": "Nous avons eu droit au meilleur accueil avec Fanilia. Ils sont très généreux et merveilleux. La maison est magnifique, encore plus belle que sur les photos. Nous avons eu des recommandations locales et avons adoré notre expérience. C'est un des meilleurs Airbnb que j'ai loué dans ma vie et j'en ai fait plusieurs ! Nous étions 4 couples et extrêmement confortables. La piscine a été extrêmement appréciée et la proximité de la plage est géniale. Il y a même des autos à notre disposition moyennant un coût très raisonnable. J'y retournerai sans aucune hésitation.",
+     "tr": "We received the warmest welcome from Fanilia. They are so generous and wonderful. The house is gorgeous, even more beautiful than in the photos. We got local recommendations and loved our experience. It is one of the best Airbnbs I have ever rented, and I have rented quite a few! We were four couples and extremely comfortable. Everyone loved the pool, and being so close to the beach is fantastic. There are even cars available for a very reasonable fee. I will go back without hesitation."},
+    {"name": "Lakia", "city": ("Fort Lauderdale, Florida", "Fort Lauderdale, Floride"), "date": ("June 2026", "juin 2026"),
+     "trip": ("Stay with children", "Séjour avec enfants"), "lang": "en", "home": False,
+     "text": "Great stay and host, she was very responsive. We were celebrating a birthday and anniversary, she provided a nice decor with balloons. Very nice Airbnb, plenty of space, the outdoor pool area is a nice vibe.",
+     "tr": "Super séjour et super hôte, très réactive. Nous fêtions un anniversaire et un anniversaire de mariage : elle avait préparé une jolie décoration avec des ballons. Très bel Airbnb, beaucoup d'espace, et une super ambiance autour de la piscine."},
+]
+
+# Services sur demande (navette aéroport, location de voiture)
+SERVICES = {
+    "en": {
+        "h": "Airport pick-up and car rental",
+        "p": "We can pick you up at SXM airport and drive you to the villa, and take you back at the end of your stay. We also rent our own cars to guests, at a friendly daily rate. Just ask on WhatsApp when you contact us.",
+        "items": ["Airport pick-up and drop-off on request", "Car rental from the hosts on request", "Local tips: beaches, restaurants, boat trips"],
+        "btn": "Ask on WhatsApp",
+        "wa": "Hello, we would like to ask about airport pick-up and car rental for our stay at Spacious Villa.",
+    },
+    "fr": {
+        "h": "Navette aéroport et location de voiture",
+        "p": "Nous pouvons venir vous chercher à l'aéroport SXM pour vous conduire à la villa, et vous y ramener en fin de séjour. Nous louons aussi nos propres voitures à nos voyageurs, à un tarif journalier sympathique. Demandez-le-nous simplement sur WhatsApp quand vous nous contactez.",
+        "items": ["Navette aéroport aller et retour sur demande", "Location de voiture auprès des hôtes sur demande", "Nos bonnes adresses : plages, restaurants, sorties en bateau"],
+        "btn": "Demander sur WhatsApp",
+        "wa": "Bonjour, nous aimerions avoir des informations sur la navette aéroport et la location de voiture pour notre séjour à Spacious Villa.",
+    },
+}
+
+# Lieux autour de la villa (page Emplacement). Photo facultative : static/img/places/<clé>.jpg
+PLACES = [
+    {"key": "pinel", "time": "3 min", "guide": "pinel",
+     "en": ("Pinel Island", "by car to the boat", "A small, protected island with calm turquoise water, beach restaurants and a snorkeling trail. The boat leaves from the Cul-de-Sac jetty and the crossing takes only a few minutes."),
+     "fr": ("L'îlet Pinel", "en voiture jusqu'au bateau", "Une petite île protégée, une eau turquoise et calme, des restaurants de plage et un sentier sous-marin. Le bateau part de l'embarcadère de Cul-de-Sac et la traversée ne dure que quelques minutes.")},
+    {"key": "orient", "time": "5 min", "guide": "beaches",
+     "en": ("Orient Bay", "by car", "The island's most famous beach: a long curve of white sand with beach clubs, sunbeds and water sports."),
+     "fr": ("La Baie Orientale", "en voiture", "La plage la plus célèbre de l'île : un long arc de sable blanc, des clubs de plage, des transats et des sports nautiques.")},
+    {"key": "grandcase", "time": "5 min", "guide": "gc",
+     "en": ("Grand Case", "by car", "The culinary village of Saint Martin, with seaside restaurants, beach grills called lolos and a lively street party on Tuesday nights in high season."),
+     "fr": ("Grand Case", "en voiture", "Le village gourmand de Saint-Martin : restaurants en bord de mer, grills de plage appelés lolos et fête de rue animée le mardi soir en haute saison.")},
+    {"key": "village", "time": "2 min", "guide": None,
+     "en": ("Cul-de-Sac village", "on foot", "Restaurants and a bakery within walking distance, and a quiet residential neighbourhood on the hillside, with a breeze day and night."),
+     "fr": ("Le village de Cul-de-Sac", "à pied", "Restaurants et boulangerie à pied, dans un quartier résidentiel calme à flanc de colline, avec de la brise le jour comme la nuit.")},
+    {"key": "airport", "time": "30 min", "guide": "airport",
+     "en": ("SXM airport", "by car", "Princess Juliana International Airport, on the Dutch side. We can pick you up on request."),
+     "fr": ("L'aéroport SXM", "en voiture", "L'aéroport international Princess Juliana, côté hollandais. Nous pouvons venir vous chercher sur demande.")},
+]
