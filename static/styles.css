@@ -386,7 +386,7 @@ section.tight-top { margin-top: 24px; }
 .cal-day b { font-weight: 600; font-size: .95rem; }
 .cal-day i { font-style: normal; font-size: .64rem; color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cal-day:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--ink); }
-.cal-day:disabled { color: var(--line); cursor: default; text-decoration: line-through; }
+.cal-day:disabled { color: var(--line); cursor: default; }
 .cal-day.in-range { background: var(--lagoon-soft); border-radius: 0; }
 .cal-day.is-start, .cal-day.is-end { background: var(--ink); color: var(--plaster); }
 .cal-day.is-start i, .cal-day.is-end i { color: var(--plaster); }
