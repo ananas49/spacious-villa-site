@@ -242,11 +242,11 @@ def head(lang, key, title, desc, path, image_i=0, jsonld=None, noindex=False):
 <meta property="og:image" content="{img_abs(image_i)}">
 <meta property="og:locale" content="{'en_US' if lang == 'en' else 'fr_FR'}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#F2C230">
+<meta name="theme-color" content="#0E2427">
 <link rel="icon" href="{asset(path, 'favicon.svg')}" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400..600&family=Jost:wght@300..600&display=swap">
 {preload_tag(image_i)}
 <link rel="stylesheet" href="{asset(path, 'styles.css')}">
 {ld}</head>
@@ -263,8 +263,8 @@ def header(lang, key, path):
     links = "".join(
         f'<a href="{link(path, PAGES[k][i])}"{" aria-current=\"page\"" if k == key else ""}>{e(t)}</a>' for k, t in u["nav"])
     return f"""<a class="skip" href="#main">{u['skip']}</a>
-<header class="site-header"><div class="wrap">
-<a class="brand" href="{link(path, home)}"><span class="brand-mark" aria-hidden="true"></span>{e(C.SITE_NAME)}</a>
+<header class="site-header{' is-over' if key == 'home' else ''}"><div class="wrap">
+<a class="brand" href="{link(path, home)}">{e(C.SITE_NAME)}</a>
 <nav class="nav" aria-label="Main">{links}</nav>
 <a class="lang" href="{link(path, other_path)}" hreflang="{other}" lang="{other}" aria-label="{e(u['switch_label'])}">{u['switch']}</a>
 <a class="btn header-cta" href="{link(path, PAGES['book'][i])}">{e(u['book'])}</a>
@@ -634,15 +634,18 @@ def build_home(lang):
 <p class="hero-lede">{e(h['lede'])}</p>
 <ul class="facts">{facts}</ul>
 </div>
-<form class="quick-book" id="quick-book" method="GET" action="{link(path, book)}" data-lang="{lang}" data-rates="{e(rates_json(lang))}">
-<h2>{e(h['quick_h'])}</h2>
-<p>{e(h['quick_p'])}</p>
-{date_fields(lang, 'q-')}
-<div class="estimate" data-estimate aria-live="polite"></div>
-<button class="btn" type="submit" style="width:100%">{e(u['book'])}</button>
-</form>
 </div>
 </section>
+<div class="bar-wrap"><div class="wrap">
+<form class="quick-book" id="quick-book" method="GET" action="{link(path, book)}" data-lang="{lang}" data-rates="{e(rates_json(lang))}">
+<h2 class="vh">{e(h['quick_h'])}</h2>
+<div class="qb-field"><label for="q-checkin">{u['checkin']}</label><input type="date" id="q-checkin" name="checkin" data-role="checkin"></div>
+<div class="qb-field"><label for="q-checkout">{u['checkout']}</label><input type="date" id="q-checkout" name="checkout" data-role="checkout"></div>
+<div class="qb-field"><label for="q-guests">{u['guests']}</label><select id="q-guests" name="guests" data-role="guests">{guest_options(lang)}</select></div>
+<button class="btn" type="submit">{e(u['book'])}</button>
+<div class="estimate" data-estimate aria-live="polite"></div>
+</form>
+</div></div>
 """
     out += sec_intro(lang, path, full=False)
     out += sec_mural(lang)

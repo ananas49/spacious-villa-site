@@ -2,6 +2,13 @@
   function q(scope, role) { return scope.querySelector('[data-role="' + role + '"]'); }
   function iso(d) { return d.toISOString().slice(0, 10); }
 
+  // Header over the home hero turns solid on scroll
+  var over = document.querySelector('.site-header.is-over');
+  if (over) {
+    var onScroll = function () { over.classList.toggle('scrolled', window.scrollY > 40); };
+    onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
   // Booked nights from the iCal calendars (Netlify function)
   var BOOKED = new Set();
   if (location.protocol !== 'file:') {
